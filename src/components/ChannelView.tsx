@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSocket } from "@/lib/socket-client";
-import type { MessageDTO, ReactionDTO } from "@/types/message";
+import type { LinkPreviewDTO, MessageDTO, ReactionDTO } from "@/types/message";
 import { MessageItem } from "./MessageItem";
 import { MessageInput } from "./MessageInput";
 import { ThreadPanel } from "./ThreadPanel";
@@ -91,6 +91,19 @@ export function ChannelView({ me, channel }: Props) {
       setTypingUsers((prev) => ({ ...prev, [payload.name]: Date.now() }));
     };
 
+    const onPreviews = (payload: {
+      messageId: string;
+      linkPreviews: LinkPreviewDTO[];
+    }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === payload.messageId
+            ? { ...m, linkPreviews: payload.linkPreviews }
+            : m
+        )
+      );
+    };
+
     const onDeleted = (payload: {
       messageId: string;
       channelId: string;
@@ -122,6 +135,7 @@ export function ChannelView({ me, channel }: Props) {
     socket.on("reactions:update", onReactions);
     socket.on("typing", onTyping);
     socket.on("message:deleted", onDeleted);
+    socket.on("message:previews", onPreviews);
 
     return () => {
       socket.emit("viewing:leave", channel.id);
@@ -129,6 +143,7 @@ export function ChannelView({ me, channel }: Props) {
       socket.off("reactions:update", onReactions);
       socket.off("typing", onTyping);
       socket.off("message:deleted", onDeleted);
+      socket.off("message:previews", onPreviews);
     };
   }, [channel.id, me.id]);
 

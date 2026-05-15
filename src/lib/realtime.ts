@@ -23,3 +23,14 @@ export function attachUsersToChannel(userIds: string[], channelId: string) {
     io.in(`user:${uid}`).socketsJoin(`channel:${channelId}`);
   }
 }
+
+export function emitLinkPreviews(
+  channelId: string,
+  messageId: string,
+  linkPreviews: unknown[]
+) {
+  emitToChannel(channelId, "message:previews", {
+    messageId,
+    linkPreviews,
+  });
+}

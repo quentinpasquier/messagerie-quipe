@@ -87,6 +87,43 @@ export function MessageItem({
           </a>
         )}
 
+        {message.linkPreviews && message.linkPreviews.length > 0 && (
+          <div className="mt-2 space-y-2">
+            {message.linkPreviews.map((p) => (
+              <a
+                key={p.id}
+                href={p.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block max-w-md border-l-4 border-noxias-green bg-gray-50 hover:bg-gray-100 rounded-r p-3 transition-colors"
+              >
+                {p.siteName && (
+                  <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-0.5">
+                    {p.siteName}
+                  </div>
+                )}
+                <div className="font-semibold text-sm text-gray-900">
+                  {p.title}
+                </div>
+                {p.description && (
+                  <div className="text-xs text-gray-600 mt-1 line-clamp-3">
+                    {p.description}
+                  </div>
+                )}
+                {p.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={p.image}
+                    alt=""
+                    loading="lazy"
+                    className="mt-2 max-h-48 max-w-full rounded object-cover"
+                  />
+                )}
+              </a>
+            ))}
+          </div>
+        )}
+
         {Object.keys(grouped).length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {Object.entries(grouped).map(([emoji, list]) => {

@@ -13,6 +13,15 @@ export type UserDTO = {
   status: string;
 };
 
+export type LinkPreviewDTO = {
+  id: string;
+  url: string;
+  title: string;
+  description: string | null;
+  image: string | null;
+  siteName: string | null;
+};
+
 export type MessageDTO = {
   id: string;
   content: string;
@@ -23,5 +32,6 @@ export type MessageDTO = {
   createdAt: string;
   user: UserDTO;
   reactions: ReactionDTO[];
+  linkPreviews?: LinkPreviewDTO[];
   _count?: { replies: number };
 };

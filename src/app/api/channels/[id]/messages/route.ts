@@ -1,9 +1,46 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { emitToChannel } from "@/lib/realtime";
+import { emitToChannel, emitLinkPreviews } from "@/lib/realtime";
+import { extractUrls, fetchLinkPreview } from "@/lib/link-preview";
 
 const USER_SELECT = { id: true, name: true, image: true, status: true } as const;
+
+async function processLinkPreviews(
+  messageId: string,
+  channelId: string,
+  urls: string[]
+) {
+  for (const url of urls) {
+    const preview = await fetchLinkPreview(url);
+    if (!preview) continue;
+    try {
+      await prisma.linkPreview.create({
+        data: {
+          messageId,
+          url: preview.url,
+          title: preview.title,
+          description: preview.description,
+          image: preview.image,
+          siteName: preview.siteName,
+        },
+      });
+    } catch (e) {
+      console.error("link preview save error:", e);
+    }
+  }
+  try {
+    const previews = await prisma.linkPreview.findMany({
+      where: { messageId },
+      orderBy: { fetchedAt: "asc" },
+    });
+    if (previews.length > 0) {
+      emitLinkPreviews(channelId, messageId, previews);
+    }
+  } catch (e) {
+    console.error("link preview emit error:", e);
+  }
+}
 
 export async function GET(
   _req: Request,
@@ -27,6 +64,7 @@ export async function GET(
       reactions: {
         include: { user: { select: { id: true, name: true } } },
       },
+      linkPreviews: { orderBy: { fetchedAt: "asc" } },
       _count: { select: { replies: true } },
     },
     take: 200,
@@ -78,11 +116,17 @@ export async function POST(
     include: {
       user: { select: USER_SELECT },
       reactions: { include: { user: { select: { id: true, name: true } } } },
+      linkPreviews: true,
       _count: { select: { replies: true } },
     },
   });
 
   emitToChannel(params.id, "message:new", message);
+
+  const urls = content ? extractUrls(content) : [];
+  if (urls.length > 0) {
+    void processLinkPreviews(message.id, params.id, urls);
+  }
 
   return NextResponse.json({ message });
 }

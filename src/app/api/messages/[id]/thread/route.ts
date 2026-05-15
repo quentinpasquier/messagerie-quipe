@@ -16,6 +16,7 @@ export async function GET(
     include: {
       user: { select: USER_SELECT },
       reactions: { include: { user: { select: { id: true, name: true } } } },
+      linkPreviews: { orderBy: { fetchedAt: "asc" } },
       _count: { select: { replies: true } },
     },
   });
@@ -32,6 +33,7 @@ export async function GET(
     include: {
       user: { select: USER_SELECT },
       reactions: { include: { user: { select: { id: true, name: true } } } },
+      linkPreviews: { orderBy: { fetchedAt: "asc" } },
     },
   });
 

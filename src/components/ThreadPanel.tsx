@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSocket } from "@/lib/socket-client";
-import type { MessageDTO, ReactionDTO } from "@/types/message";
+import type { LinkPreviewDTO, MessageDTO, ReactionDTO } from "@/types/message";
 import { MessageItem } from "./MessageItem";
 import { MessageInput } from "./MessageInput";
 
@@ -73,6 +73,24 @@ export function ThreadPanel({
         )
       );
     };
+    const onPreviews = (payload: {
+      messageId: string;
+      linkPreviews: LinkPreviewDTO[];
+    }) => {
+      setParent((p) =>
+        p && p.id === payload.messageId
+          ? { ...p, linkPreviews: payload.linkPreviews }
+          : p
+      );
+      setReplies((prev) =>
+        prev.map((m) =>
+          m.id === payload.messageId
+            ? { ...m, linkPreviews: payload.linkPreviews }
+            : m
+        )
+      );
+    };
+
     const onDeleted = (payload: {
       messageId: string;
       parentId: string | null;
@@ -89,10 +107,12 @@ export function ThreadPanel({
     socket.on("message:new", onNew);
     socket.on("reactions:update", onReactions);
     socket.on("message:deleted", onDeleted);
+    socket.on("message:previews", onPreviews);
     return () => {
       socket.off("message:new", onNew);
       socket.off("reactions:update", onReactions);
       socket.off("message:deleted", onDeleted);
+      socket.off("message:previews", onPreviews);
     };
   }, [parentId, channelId, onClose]);
 
