@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { MessageDTO } from "@/types/message";
 import { Avatar } from "./Avatar";
 import { linkify } from "@/lib/linkify";
+import { useUsers } from "./UsersProvider";
 
 const QUICK_EMOJIS = ["👍", "❤️", "😄", "🎉", "👀", "🚀"];
+
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function timeFmt(iso: string) {
   return new Date(iso).toLocaleTimeString([], {
@@ -31,6 +36,18 @@ export function MessageItem({
 }) {
   const [showPicker, setShowPicker] = useState(false);
   const isMine = message.userId === meId;
+  const users = useUsers();
+  const userNames = useMemo(
+    () => new Set(users.map((u) => u.name.toLowerCase())),
+    [users]
+  );
+  const meName = useMemo(() => users.find((u) => u.id === meId)?.name, [
+    users,
+    meId,
+  ]);
+  const mentionsMe =
+    meName !== undefined &&
+    new RegExp(`@${escapeRegex(meName)}\\b`, "i").test(message.content);
 
   const grouped = message.reactions.reduce<
     Record<string, typeof message.reactions>
@@ -46,7 +63,11 @@ export function MessageItem({
   }
 
   return (
-    <li className="group relative flex gap-3 px-2 py-1.5 rounded hover:bg-gray-50">
+    <li
+      className={`group relative flex gap-3 px-2 py-1.5 rounded hover:bg-gray-50 ${
+        mentionsMe ? "bg-noxias-green/5 border-l-2 border-noxias-green" : ""
+      }`}
+    >
       <Avatar
         user={{
           id: message.user.id,
@@ -67,7 +88,7 @@ export function MessageItem({
         </div>
         {message.content && (
           <div className="text-sm whitespace-pre-wrap break-words text-gray-800">
-            {linkify(message.content)}
+            {linkify(message.content, { userNames, meName })}
           </div>
         )}
         {message.imageUrl && (

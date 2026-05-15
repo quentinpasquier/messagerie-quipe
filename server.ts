@@ -65,6 +65,41 @@ app.prepare().then(async () => {
   (globalThis as any).io = io;
 
   const userSockets = new Map<string, Set<string>>();
+  // channelId → userId → count of viewing sockets
+  const channelViewers = new Map<string, Map<string, number>>();
+
+  function emitViewingList(channelId: string) {
+    const counts = channelViewers.get(channelId);
+    const userIds = counts ? Array.from(counts.keys()) : [];
+    io.to(`viewing:${channelId}`).emit("viewing:list", {
+      channelId,
+      userIds,
+    });
+  }
+
+  function addViewer(channelId: string, userId: string) {
+    let counts = channelViewers.get(channelId);
+    if (!counts) {
+      counts = new Map();
+      channelViewers.set(channelId, counts);
+    }
+    const next = (counts.get(userId) ?? 0) + 1;
+    counts.set(userId, next);
+    if (next === 1) emitViewingList(channelId);
+  }
+
+  function removeViewer(channelId: string, userId: string) {
+    const counts = channelViewers.get(channelId);
+    if (!counts) return;
+    const next = (counts.get(userId) ?? 1) - 1;
+    if (next <= 0) {
+      counts.delete(userId);
+      if (counts.size === 0) channelViewers.delete(channelId);
+      emitViewingList(channelId);
+    } else {
+      counts.set(userId, next);
+    }
+  }
 
   io.use(async (socket, next) => {
     const userId = await readUserIdFromSocket(socket);
@@ -118,12 +153,25 @@ app.prepare().then(async () => {
     }
 
     // "viewing:X" tracks who is currently looking at channel X — used
-    // for the typing indicator so non-viewers don't see it.
+    // for the typing indicator and presence avatars in the channel header.
+    const viewingByThisSocket = new Set<string>();
     socket.on("viewing:join", (channelId: string) => {
+      if (viewingByThisSocket.has(channelId)) return;
+      viewingByThisSocket.add(channelId);
       socket.join(`viewing:${channelId}`);
+      addViewer(channelId, userId);
+      // Send the current full list to the newly-joining socket too.
+      const counts = channelViewers.get(channelId);
+      socket.emit("viewing:list", {
+        channelId,
+        userIds: counts ? Array.from(counts.keys()) : [],
+      });
     });
     socket.on("viewing:leave", (channelId: string) => {
+      if (!viewingByThisSocket.has(channelId)) return;
+      viewingByThisSocket.delete(channelId);
       socket.leave(`viewing:${channelId}`);
+      removeViewer(channelId, userId);
     });
     socket.on(
       "typing",
@@ -135,6 +183,12 @@ app.prepare().then(async () => {
     );
 
     socket.on("disconnect", async () => {
+      // Free any viewer counts this socket held.
+      for (const channelId of viewingByThisSocket) {
+        removeViewer(channelId, userId);
+      }
+      viewingByThisSocket.clear();
+
       const userSet = userSockets.get(userId);
       if (!userSet) return;
       userSet.delete(socket.id);

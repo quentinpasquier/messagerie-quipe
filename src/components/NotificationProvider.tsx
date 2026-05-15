@@ -32,13 +32,20 @@ function canShowOSNotification(): boolean {
   );
 }
 
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function NotificationProvider({
   meId,
+  meName,
   children,
 }: {
   meId: string;
+  meName: string;
   children: React.ReactNode;
 }) {
+  const mentionRegex = new RegExp(`@${escapeRegex(meName)}\\b`, "i");
   const params = useParams();
   const router = useRouter();
   const currentChannelId = (params?.id as string | undefined) ?? "";
@@ -51,6 +58,7 @@ export function NotificationProvider({
       if (m.userId === meId) return;
 
       const isCurrent = m.channelId === currentChannelId;
+      const isMention = mentionRegex.test(m.content);
       if (!isCurrent) {
         setCounts((prev) => ({
           ...prev,
@@ -58,15 +66,22 @@ export function NotificationProvider({
         }));
       }
 
-      // OS notification only when tab is hidden / unfocused.
-      if (!isCurrent && document.hidden && canShowOSNotification()) {
+      // OS notification : si je suis mentionné, on tire même tab focus.
+      const shouldNotify =
+        canShowOSNotification() &&
+        (isMention || (!isCurrent && document.hidden));
+      if (shouldNotify) {
         const body =
           m.content || (m.imageUrl ? "📷 a partagé une image" : "");
+        const title = isMention
+          ? `${m.user.name} t'a mentionné`
+          : m.user.name;
         try {
-          const notif = new Notification(m.user.name, {
+          const notif = new Notification(title, {
             body: body.length > 200 ? body.slice(0, 200) + "…" : body,
             icon: m.user.image || undefined,
             tag: `mq-${m.channelId}`,
+            requireInteraction: isMention,
           });
           notif.onclick = () => {
             window.focus();
@@ -82,7 +97,7 @@ export function NotificationProvider({
     return () => {
       socket.off("message:new", onMessage);
     };
-  }, [meId, currentChannelId, router]);
+  }, [meId, currentChannelId, router, mentionRegex]);
 
   useEffect(() => {
     if (!currentChannelId) return;

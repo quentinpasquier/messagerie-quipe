@@ -23,7 +23,14 @@ type SidebarUser = {
   image: string | null;
   status: string;
 };
-type Me = { id: string; name: string; email: string; image: string | null };
+type Me = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  statusEmoji: string | null;
+  statusText: string | null;
+};
 
 function UnreadBadge({ count }: { count: number }) {
   if (count <= 0) return null;
@@ -190,7 +197,11 @@ export function Sidebar({
           <div className="font-semibold text-white text-sm truncate">
             {me.name}
           </div>
-          <StatusPicker meId={me.id} />
+          <StatusPicker
+            meId={me.id}
+            customEmoji={me.statusEmoji}
+            customText={me.statusText}
+          />
         </div>
       </div>
 

@@ -4,20 +4,45 @@ import React from "react";
 const URL_RE = /https?:\/\/[^\s<>"']+[^\s<>"',.!?;:)\]]/i;
 const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]+/i;
 const PHONE_RE = /\+\d{1,3}[\s.-]?\d(?:[\s.-]?\d){7,12}|\b0\d(?:[\s.-]?\d){8}\b/;
+// Mentions @{name} — un nom commercial peut contenir espaces, on essaie 1 à 3 mots.
+const MENTION_RE = /@[\p{L}][\p{L}\p{M}'-]*(?: [\p{L}][\p{L}\p{M}'-]*){0,3}/u;
 
 const COMBINED_RE = new RegExp(
-  [URL_RE.source, EMAIL_RE.source, PHONE_RE.source].join("|"),
-  "gi"
+  [URL_RE.source, EMAIL_RE.source, PHONE_RE.source, MENTION_RE.source].join(
+    "|"
+  ),
+  "giu"
 );
 
-type Kind = "url" | "email" | "phone";
+type Kind = "url" | "email" | "phone" | "mention";
 
 function classify(token: string): Kind | null {
   if (/^https?:\/\//i.test(token)) return "url";
+  if (token.startsWith("@")) return "mention";
   if (EMAIL_RE.test(token)) return "email";
   const compact = token.replace(/[\s.-]/g, "");
   if (/^(\+\d|0\d)/.test(compact)) return "phone";
   return null;
+}
+
+// On accepte une mention seulement si le nom matche un user. Sinon
+// on tronque (greedy → on essaie 4 mots, puis 3, puis 2, puis 1).
+function resolveMention(
+  raw: string,
+  names: Set<string>
+): { match: string | null; rest: string } {
+  const candidate = raw.slice(1); // sans @
+  const words = candidate.split(" ");
+  for (let n = words.length; n >= 1; n--) {
+    const tryName = words.slice(0, n).join(" ");
+    if (names.has(tryName.toLowerCase())) {
+      return {
+        match: "@" + tryName,
+        rest: words.slice(n).join(" "),
+      };
+    }
+  }
+  return { match: null, rest: candidate };
 }
 
 function phoneHref(s: string): string {
@@ -27,14 +52,23 @@ function phoneHref(s: string): string {
 const LINK_CLS =
   "text-noxias-greenDark underline hover:opacity-80 break-words";
 
-export function linkify(text: string): React.ReactNode {
+const MENTION_CLS =
+  "bg-noxias-green/15 text-noxias-greenDark font-semibold rounded px-1 py-0.5";
+const MENTION_ME_CLS =
+  "bg-noxias-green text-noxias-bg font-semibold rounded px-1 py-0.5";
+
+export function linkify(
+  text: string,
+  opts?: { userNames?: Set<string>; meName?: string }
+): React.ReactNode {
   if (!text) return null;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  // Fresh regex pour ne pas porter de lastIndex entre appels.
-  const re = new RegExp(COMBINED_RE.source, "gi");
+  const re = new RegExp(COMBINED_RE.source, "giu");
   let match: RegExpExecArray | null;
   let key = 0;
+  const userNames = opts?.userNames ?? new Set<string>();
+  const meName = opts?.meName?.toLowerCase();
 
   while ((match = re.exec(text)) !== null) {
     const start = match.index;
@@ -71,6 +105,26 @@ export function linkify(text: string): React.ReactNode {
           📞 {token}
         </a>
       );
+    } else if (kind === "mention") {
+      const { match: resolved, rest } = resolveMention(token, userNames);
+      if (resolved) {
+        const isMe =
+          meName && resolved.slice(1).toLowerCase() === meName;
+        parts.push(
+          <span key={key++} className={isMe ? MENTION_ME_CLS : MENTION_CLS}>
+            {resolved}
+          </span>
+        );
+        // re-positionner lastIndex après la mention résolue.
+        lastIndex = start + resolved.length;
+        if (rest) parts.push(" " + rest);
+        // Le regex a consommé tout le token; saute manuellement.
+        re.lastIndex = start + token.length;
+        if (rest) lastIndex = start + token.length;
+        continue;
+      } else {
+        parts.push(token);
+      }
     } else {
       parts.push(token);
     }

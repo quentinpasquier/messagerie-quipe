@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/Sidebar";
 import { StatusProvider } from "@/components/StatusProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
+import { UsersProvider, type SimpleUser } from "@/components/UsersProvider";
 
 export default async function AppLayout({
   children,
@@ -30,7 +31,16 @@ export default async function AppLayout({
     include: {
       members: {
         include: {
-          user: { select: { id: true, name: true, image: true, status: true } },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              status: true,
+              statusEmoji: true,
+              statusText: true,
+            },
+          },
         },
       },
     },
@@ -38,7 +48,15 @@ export default async function AppLayout({
 
   const users = await prisma.user.findMany({
     where: { id: { not: me.id } },
-    select: { id: true, name: true, email: true, image: true, status: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      status: true,
+      statusEmoji: true,
+      statusText: true,
+    },
     orderBy: { name: "asc" },
   });
 
@@ -58,24 +76,33 @@ export default async function AppLayout({
     for (const m of dm.members) initialStatuses[m.userId] = m.user.status;
   }
 
+  const allSimpleUsers: SimpleUser[] = [
+    { id: me.id, name: me.name, image: me.image },
+    ...users.map((u) => ({ id: u.id, name: u.name, image: u.image })),
+  ];
+
   return (
     <StatusProvider initial={initialStatuses}>
-      <NotificationProvider meId={me.id}>
-        <div className="flex h-screen w-screen overflow-hidden bg-white">
-          <Sidebar
-            me={{
-              id: me.id,
-              name: me.name,
-              email: me.email,
-              image: me.image,
-            }}
-            channels={channels}
-            dms={dmList}
-            users={users}
-          />
-          <main className="flex-1 flex flex-col min-w-0">{children}</main>
-        </div>
-      </NotificationProvider>
+      <UsersProvider users={allSimpleUsers}>
+        <NotificationProvider meId={me.id} meName={me.name}>
+          <div className="flex h-screen w-screen overflow-hidden bg-white">
+            <Sidebar
+              me={{
+                id: me.id,
+                name: me.name,
+                email: me.email,
+                image: me.image,
+                statusEmoji: me.statusEmoji,
+                statusText: me.statusText,
+              }}
+              channels={channels}
+              dms={dmList}
+              users={users}
+            />
+            <main className="flex-1 flex flex-col min-w-0">{children}</main>
+          </div>
+        </NotificationProvider>
+      </UsersProvider>
     </StatusProvider>
   );
 }

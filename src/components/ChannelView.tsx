@@ -6,6 +6,9 @@ import type { LinkPreviewDTO, MessageDTO, ReactionDTO } from "@/types/message";
 import { MessageItem } from "./MessageItem";
 import { MessageInput } from "./MessageInput";
 import { ThreadPanel } from "./ThreadPanel";
+import { Avatar } from "./Avatar";
+import { useUsers } from "./UsersProvider";
+import { fireConfetti, shouldFireConfetti } from "@/lib/confetti";
 
 type Props = {
   me: { id: string; name: string };
@@ -18,10 +21,12 @@ type Props = {
 };
 
 export function ChannelView({ me, channel }: Props) {
+  const allUsers = useUsers();
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [threadParentId, setThreadParentId] = useState<string | null>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, number>>({});
+  const [viewerIds, setViewerIds] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +76,17 @@ export function ChannelView({ me, channel }: Props) {
         if (prev.some((p) => p.id === m.id)) return prev;
         return [...prev, m];
       });
+      if (m.userId !== me.id && shouldFireConfetti(m.content)) {
+        fireConfetti();
+      }
+    };
+
+    const onViewingList = (payload: {
+      channelId: string;
+      userIds: string[];
+    }) => {
+      if (payload.channelId !== channel.id) return;
+      setViewerIds(payload.userIds);
     };
 
     const onReactions = (payload: {
@@ -136,14 +152,17 @@ export function ChannelView({ me, channel }: Props) {
     socket.on("typing", onTyping);
     socket.on("message:deleted", onDeleted);
     socket.on("message:previews", onPreviews);
+    socket.on("viewing:list", onViewingList);
 
     return () => {
       socket.emit("viewing:leave", channel.id);
+      setViewerIds([]);
       socket.off("message:new", onMessage);
       socket.off("reactions:update", onReactions);
       socket.off("typing", onTyping);
       socket.off("message:deleted", onDeleted);
       socket.off("message:previews", onPreviews);
+      socket.off("viewing:list", onViewingList);
     };
   }, [channel.id, me.id]);
 
@@ -216,18 +235,62 @@ export function ChannelView({ me, channel }: Props) {
     ? `Glisser un mot à ${channel.name}...`
     : `Pitcher dans #${channel.name}...`;
 
+  const usersById = new Map(allUsers.map((u) => [u.id, u]));
+  const viewers = viewerIds
+    .filter((id) => id !== me.id)
+    .map((id) => usersById.get(id))
+    .filter((u): u is NonNullable<typeof u> => Boolean(u));
+  const shownViewers = viewers.slice(0, 5);
+  const hiddenViewers = Math.max(0, viewers.length - shownViewers.length);
+  const mentionUsers = allUsers.filter((u) => u.id !== me.id);
+
   return (
     <div className="flex h-full min-w-0 bg-white text-gray-900">
       <section className="flex-1 flex flex-col min-w-0">
-        <header className="border-b border-gray-200 px-5 py-3 flex items-center gap-2 bg-white">
-          <span className="text-gray-500">{channel.isDM ? "@" : "#"}</span>
-          <h1 className="font-bold text-lg truncate text-gray-900">
-            {channel.name}
-          </h1>
-          {channel.description && (
-            <span className="text-sm text-gray-500 ml-3 truncate">
-              {channel.description}
-            </span>
+        <header className="border-b border-gray-200 px-5 py-3 flex items-center gap-3 bg-white">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-gray-500">{channel.isDM ? "@" : "#"}</span>
+            <h1 className="font-bold text-lg truncate text-gray-900">
+              {channel.name}
+            </h1>
+            {channel.description && (
+              <span className="text-sm text-gray-500 ml-2 truncate">
+                {channel.description}
+              </span>
+            )}
+          </div>
+          {shownViewers.length > 0 && (
+            <div
+              className="ml-auto flex items-center gap-2"
+              title={
+                viewers.map((v) => v.name).join(", ") +
+                " regarde" +
+                (viewers.length > 1 ? "nt" : "") +
+                " ce canal"
+              }
+            >
+              <div className="flex -space-x-2">
+                {shownViewers.map((v) => (
+                  <div
+                    key={v.id}
+                    className="ring-2 ring-white rounded"
+                    title={v.name}
+                  >
+                    <Avatar
+                      user={{ id: v.id, name: v.name, image: v.image }}
+                      size="sm"
+                      showStatus={false}
+                    />
+                  </div>
+                ))}
+              </div>
+              {hiddenViewers > 0 && (
+                <span className="text-xs text-gray-500">+{hiddenViewers}</span>
+              )}
+              <span className="text-xs text-gray-500 hidden sm:inline">
+                {viewers.length === 1 ? "regarde" : "regardent"} ce canal
+              </span>
+            </div>
           )}
         </header>
 
@@ -274,6 +337,7 @@ export function ChannelView({ me, channel }: Props) {
             onSend={(content, imageUrl) => sendMessage(content, imageUrl, null)}
             onTyping={emitTyping}
             placeholder={placeholder}
+            mentionUsers={mentionUsers}
           />
         </div>
       </section>

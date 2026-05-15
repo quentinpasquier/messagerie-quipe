@@ -15,7 +15,13 @@ export async function PATCH(req: Request) {
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => null);
-  const updates: { name?: string; image?: string | null; password?: string } = {};
+  const updates: {
+    name?: string;
+    image?: string | null;
+    password?: string;
+    statusEmoji?: string | null;
+    statusText?: string | null;
+  } = {};
 
   if (body?.name !== undefined) {
     const name = String(body.name).trim();
@@ -25,6 +31,15 @@ export async function PATCH(req: Request) {
 
   if (body?.image !== undefined) {
     updates.image = body.image ? String(body.image) : null;
+  }
+
+  if (body?.statusEmoji !== undefined) {
+    const v = body.statusEmoji ? String(body.statusEmoji).trim().slice(0, 8) : null;
+    updates.statusEmoji = v || null;
+  }
+  if (body?.statusText !== undefined) {
+    const v = body.statusText ? String(body.statusText).trim().slice(0, 80) : null;
+    updates.statusText = v || null;
   }
 
   if (body?.newPassword) {
