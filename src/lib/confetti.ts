@@ -1,20 +1,33 @@
 // Mini-confettis maison : pas de dépendance, ~30 émojis qui tombent.
 
-const SALES_EMOJIS = ["🎉", "💰", "🚀", "💸", "🏆", "✨", "🥂", "📈"];
+const SALES_EMOJIS = ["🎉", "💰", "🚀", "💸", "🏆", "✨", "🥂", "📈", "🎯"];
 
 const KEYWORDS = [
   "closing",
   "closé",
-  "close",
+  "closed",
+  "close ",
   "signé",
   "signature",
+  "signe ",
   "deal won",
   "deal closed",
+  "deal!",
+  "deal :",
   "won",
   "gagné",
+  "gagner",
+  "vente",
+  "vendu",
+  "contrat",
   "go!",
+  "let's go",
+  "lfg",
   "🎉",
   "🏆",
+  "💰",
+  "🎯",
+  "boom",
 ];
 
 export function shouldFireConfetti(content: string): boolean {
@@ -37,18 +50,18 @@ export function fireConfetti() {
     "position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden";
   document.body.appendChild(container);
 
-  const count = 30;
+  const count = 35;
   for (let i = 0; i < count; i++) {
     const el = document.createElement("div");
     const emoji =
       SALES_EMOJIS[Math.floor(Math.random() * SALES_EMOJIS.length)];
     el.textContent = emoji;
-    const size = 18 + Math.random() * 24;
+    const size = 18 + Math.random() * 26;
     const startLeft = Math.random() * 100;
     const drift = (Math.random() - 0.5) * 300;
     const rotate = Math.random() * 720;
-    const delay = Math.random() * 250;
-    const duration = 1800 + Math.random() * 1200;
+    const delay = Math.random() * 300;
+    const duration = 1800 + Math.random() * 1400;
     el.style.cssText = `
       position:absolute;
       top:-60px;
@@ -68,5 +81,5 @@ export function fireConfetti() {
       });
     });
   }
-  setTimeout(() => container.remove(), 3500);
+  setTimeout(() => container.remove(), 3800);
 }

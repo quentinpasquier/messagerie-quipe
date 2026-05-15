@@ -9,7 +9,7 @@ import { useStatus } from "./StatusProvider";
 import { useUnread } from "./NotificationProvider";
 import { NotificationToggle } from "./NotificationToggle";
 
-type Channel = { id: string; name: string };
+type Channel = { id: string; name: string; emoji: string | null };
 type DM = {
   channelId: string;
   userId: string;
@@ -61,7 +61,19 @@ function ChannelRow({
           : "text-gray-300 hover:bg-sidebarHover"
       }`}
     >
-      <span className={active ? "text-noxias-bg" : hasUnread ? "text-white" : "text-gray-400"}>#</span>
+      <span
+        className={`w-5 text-center ${
+          channel.emoji
+            ? ""
+            : active
+            ? "text-noxias-bg"
+            : hasUnread
+            ? "text-white"
+            : "text-gray-400"
+        }`}
+      >
+        {channel.emoji || "#"}
+      </span>
       <span className="flex-1 truncate">{channel.name}</span>
       <UnreadBadge count={hasUnread ? unread : 0} />
     </Link>
@@ -70,13 +82,7 @@ function ChannelRow({
 
 function DMRow({ dm, active }: { dm: DM; active: boolean }) {
   const unread = useUnread(dm.channelId);
-  const status = useStatus(dm.userId);
   const hasUnread = unread > 0 && !active;
-  // Sur fond vert actif, on remplace la pastille verte (invisible) par
-  // un point sombre — sinon on garde la pastille de statut habituelle.
-  const dotClass = active
-    ? "bg-noxias-bg/60"
-    : STATUS_COLOR[status] || STATUS_COLOR.OFFLINE;
   return (
     <Link
       href={`/c/${dm.channelId}`}
@@ -88,9 +94,10 @@ function DMRow({ dm, active }: { dm: DM; active: boolean }) {
           : "text-gray-300 hover:bg-sidebarHover"
       }`}
     >
-      <span
-        className={`inline-block w-2 h-2 rounded-full ${dotClass}`}
-        title={active ? undefined : status}
+      <Avatar
+        user={{ id: dm.userId, name: dm.name, image: dm.image }}
+        size="sm"
+        ringClass={active ? "ring-noxias-green" : "ring-sidebar"}
       />
       <span className="flex-1 truncate">{dm.name}</span>
       <UnreadBadge count={hasUnread ? unread : 0} />
@@ -105,14 +112,15 @@ function TeammateRow({
   user: { id: string; name: string; image: string | null };
   onClick: () => void;
 }) {
-  const status = useStatus(user.id);
   return (
     <button
       onClick={onClick}
       className="w-full text-left flex items-center gap-2 px-2 py-1 rounded text-sm hover:bg-sidebarHover text-gray-300"
     >
-      <span
-        className={`inline-block w-2 h-2 rounded-full ${STATUS_COLOR[status] || STATUS_COLOR.OFFLINE}`}
+      <Avatar
+        user={{ id: user.id, name: user.name, image: user.image }}
+        size="sm"
+        ringClass="ring-sidebar"
       />
       <span className="truncate">{user.name}</span>
     </button>
@@ -135,6 +143,7 @@ export function Sidebar({
   const currentId = (params?.id as string | undefined) ?? "";
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newEmoji, setNewEmoji] = useState("");
 
   async function createChannel(e: React.FormEvent) {
     e.preventDefault();
@@ -142,11 +151,12 @@ export function Sidebar({
     const res = await fetch("/api/channels", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName }),
+      body: JSON.stringify({ name: newName, emoji: newEmoji || null }),
     });
     if (res.ok) {
       const { channel } = await res.json();
       setNewName("");
+      setNewEmoji("");
       setCreating(false);
       router.push(`/c/${channel.id}`);
       router.refresh();
@@ -221,13 +231,20 @@ export function Sidebar({
             </button>
           </div>
           {creating && (
-            <form onSubmit={createChannel} className="px-2 mb-2">
+            <form onSubmit={createChannel} className="px-2 mb-2 flex gap-1">
+              <input
+                value={newEmoji}
+                onChange={(e) => setNewEmoji(e.target.value)}
+                placeholder="🎯"
+                maxLength={8}
+                className="w-10 text-center rounded bg-white/10 px-1 py-1 text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-white/20"
+              />
               <input
                 autoFocus
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="ex: team-closing"
-                className="w-full rounded bg-white/10 px-2 py-1 text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-white/20"
+                className="flex-1 rounded bg-white/10 px-2 py-1 text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-white/20"
               />
             </form>
           )}

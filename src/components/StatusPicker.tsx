@@ -115,7 +115,7 @@ export function StatusPicker({
         <span className="text-noxias-textMuted">▾</span>
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 mb-1 bg-white text-gray-800 rounded shadow-lg border border-gray-200 py-1 z-20 w-64">
+        <div className="absolute top-full left-0 mt-1 bg-white text-gray-800 rounded shadow-lg border border-gray-200 py-1 z-20 w-64">
           {OPTIONS.map((opt) => (
             <button
               key={opt}

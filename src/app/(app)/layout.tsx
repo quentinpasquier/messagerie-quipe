@@ -20,7 +20,7 @@ export default async function AppLayout({
       members: { some: { userId: me.id } },
     },
     orderBy: { createdAt: "asc" },
-    select: { id: true, name: true },
+    select: { id: true, name: true, emoji: true },
   });
 
   const dms = await prisma.channel.findMany({

@@ -38,6 +38,7 @@ export default async function ChannelPage({
         id: channel.id,
         name: displayName,
         description: channel.description,
+        emoji: channel.emoji,
         isDM,
       }}
     />

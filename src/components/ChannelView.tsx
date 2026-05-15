@@ -9,6 +9,7 @@ import { ThreadPanel } from "./ThreadPanel";
 import { Avatar } from "./Avatar";
 import { useUsers } from "./UsersProvider";
 import { fireConfetti, shouldFireConfetti } from "@/lib/confetti";
+import { ChannelEditor } from "./ChannelEditor";
 
 type Props = {
   me: { id: string; name: string };
@@ -16,6 +17,7 @@ type Props = {
     id: string;
     name: string;
     description: string | null;
+    emoji: string | null;
     isDM: boolean;
   };
 };
@@ -27,6 +29,7 @@ export function ChannelView({ me, channel }: Props) {
   const [threadParentId, setThreadParentId] = useState<string | null>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, number>>({});
   const [viewerIds, setViewerIds] = useState<string[]>([]);
+  const [editorOpen, setEditorOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +79,7 @@ export function ChannelView({ me, channel }: Props) {
         if (prev.some((p) => p.id === m.id)) return prev;
         return [...prev, m];
       });
-      if (m.userId !== me.id && shouldFireConfetti(m.content)) {
+      if (shouldFireConfetti(m.content)) {
         fireConfetti();
       }
     };
@@ -246,13 +249,24 @@ export function ChannelView({ me, channel }: Props) {
 
   return (
     <div className="flex h-full min-w-0 bg-white text-gray-900">
-      <section className="flex-1 flex flex-col min-w-0">
+      <section className="flex-1 flex flex-col min-w-0 relative">
         <header className="border-b border-gray-200 px-5 py-3 flex items-center gap-3 bg-white">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-gray-500">{channel.isDM ? "@" : "#"}</span>
+            <span className="text-gray-500 text-lg leading-none">
+              {channel.isDM ? "@" : channel.emoji || "#"}
+            </span>
             <h1 className="font-bold text-lg truncate text-gray-900">
               {channel.name}
             </h1>
+            {!channel.isDM && (
+              <button
+                onClick={() => setEditorOpen((v) => !v)}
+                className="text-gray-400 hover:text-noxias-greenDark text-sm"
+                title="Modifier le canal"
+              >
+                ✏️
+              </button>
+            )}
             {channel.description && (
               <span className="text-sm text-gray-500 ml-2 truncate">
                 {channel.description}
@@ -293,6 +307,16 @@ export function ChannelView({ me, channel }: Props) {
             </div>
           )}
         </header>
+
+        {editorOpen && !channel.isDM && (
+          <ChannelEditor
+            channelId={channel.id}
+            name={channel.name}
+            emoji={channel.emoji}
+            description={channel.description}
+            onClose={() => setEditorOpen(false)}
+          />
+        )}
 
         <div
           ref={scrollRef}

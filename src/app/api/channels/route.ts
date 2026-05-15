@@ -11,6 +11,7 @@ export async function POST(req: Request) {
   const rawName = String(body?.name ?? "").trim().toLowerCase();
   const name = rawName.replace(/\s+/g, "-").replace(/[^a-z0-9-éèêëàâäîïôöùûüç]/g, "");
   const description = body?.description ? String(body.description).trim() : null;
+  const emoji = body?.emoji ? String(body.emoji).trim().slice(0, 8) : null;
 
   if (!name) {
     return NextResponse.json({ error: "Nom requis" }, { status: 400 });
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
     data: {
       name,
       description,
+      emoji: emoji || null,
       type: "PUBLIC",
       members: { create: { userId: user.id } },
     },
