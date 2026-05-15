@@ -91,15 +91,44 @@ export function ChannelView({ me, channel }: Props) {
       setTypingUsers((prev) => ({ ...prev, [payload.name]: Date.now() }));
     };
 
+    const onDeleted = (payload: {
+      messageId: string;
+      channelId: string;
+      parentId: string | null;
+    }) => {
+      if (payload.channelId !== channel.id) return;
+      if (payload.parentId) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === payload.parentId
+              ? {
+                  ...msg,
+                  _count: {
+                    replies: Math.max(0, (msg._count?.replies ?? 1) - 1),
+                  },
+                }
+              : msg
+          )
+        );
+      } else {
+        setMessages((prev) => prev.filter((m) => m.id !== payload.messageId));
+        setThreadParentId((curr) =>
+          curr === payload.messageId ? null : curr
+        );
+      }
+    };
+
     socket.on("message:new", onMessage);
     socket.on("reactions:update", onReactions);
     socket.on("typing", onTyping);
+    socket.on("message:deleted", onDeleted);
 
     return () => {
       socket.emit("viewing:leave", channel.id);
       socket.off("message:new", onMessage);
       socket.off("reactions:update", onReactions);
       socket.off("typing", onTyping);
+      socket.off("message:deleted", onDeleted);
     };
   }, [channel.id, me.id]);
 
@@ -145,6 +174,16 @@ export function ChannelView({ me, channel }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ emoji }),
     });
+  }, []);
+
+  const deleteMessage = useCallback(async (messageId: string) => {
+    const res = await fetch(`/api/messages/${messageId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Impossible de supprimer");
+    }
   }, []);
 
   const emitTyping = useCallback(() => {
@@ -198,6 +237,7 @@ export function ChannelView({ me, channel }: Props) {
                   meId={me.id}
                   onReact={toggleReaction}
                   onOpenThread={() => setThreadParentId(m.id)}
+                  onDelete={deleteMessage}
                 />
               ))}
             </ul>
@@ -233,6 +273,7 @@ export function ChannelView({ me, channel }: Props) {
             sendMessage(content, imageUrl, threadParentId)
           }
           onReact={toggleReaction}
+          onDelete={deleteMessage}
         />
       )}
     </div>

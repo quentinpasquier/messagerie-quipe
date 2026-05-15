@@ -13,6 +13,7 @@ export function ThreadPanel({
   onClose,
   onReply,
   onReact,
+  onDelete,
 }: {
   meId: string;
   channelId: string;
@@ -20,6 +21,7 @@ export function ThreadPanel({
   onClose: () => void;
   onReply: (content: string, imageUrl?: string | null) => Promise<void> | void;
   onReact: (messageId: string, emoji: string) => void;
+  onDelete?: (messageId: string) => void;
 }) {
   const [parent, setParent] = useState<MessageDTO | null>(null);
   const [replies, setReplies] = useState<MessageDTO[]>([]);
@@ -71,13 +73,28 @@ export function ThreadPanel({
         )
       );
     };
+    const onDeleted = (payload: {
+      messageId: string;
+      parentId: string | null;
+    }) => {
+      if (payload.messageId === parentId) {
+        onClose();
+        return;
+      }
+      if (payload.parentId === parentId) {
+        setReplies((prev) => prev.filter((r) => r.id !== payload.messageId));
+      }
+    };
+
     socket.on("message:new", onNew);
     socket.on("reactions:update", onReactions);
+    socket.on("message:deleted", onDeleted);
     return () => {
       socket.off("message:new", onNew);
       socket.off("reactions:update", onReactions);
+      socket.off("message:deleted", onDeleted);
     };
-  }, [parentId, channelId]);
+  }, [parentId, channelId, onClose]);
 
   return (
     <aside className="w-[380px] flex-shrink-0 border-l border-gray-200 flex flex-col bg-white">
@@ -102,6 +119,7 @@ export function ThreadPanel({
                 message={parent}
                 meId={meId}
                 onReact={onReact}
+                onDelete={onDelete}
                 compact
               />
             </ul>
@@ -113,6 +131,7 @@ export function ThreadPanel({
                   message={r}
                   meId={meId}
                   onReact={onReact}
+                  onDelete={onDelete}
                   compact
                 />
               ))}

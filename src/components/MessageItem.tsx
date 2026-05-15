@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { MessageDTO } from "@/types/message";
 import { Avatar } from "./Avatar";
+import { linkify } from "@/lib/linkify";
 
 const QUICK_EMOJIS = ["👍", "❤️", "😄", "🎉", "👀", "🚀"];
 
@@ -18,15 +19,18 @@ export function MessageItem({
   meId,
   onReact,
   onOpenThread,
+  onDelete,
   compact = false,
 }: {
   message: MessageDTO;
   meId: string;
   onReact: (messageId: string, emoji: string) => void;
   onOpenThread?: () => void;
+  onDelete?: (messageId: string) => void;
   compact?: boolean;
 }) {
   const [showPicker, setShowPicker] = useState(false);
+  const isMine = message.userId === meId;
 
   const grouped = message.reactions.reduce<
     Record<string, typeof message.reactions>
@@ -34,6 +38,12 @@ export function MessageItem({
     (acc[r.emoji] ||= []).push(r);
     return acc;
   }, {});
+
+  function handleDelete() {
+    if (!onDelete) return;
+    if (!confirm("Effacer définitivement ce message ?")) return;
+    onDelete(message.id);
+  }
 
   return (
     <li className="group relative flex gap-3 px-2 py-1.5 rounded hover:bg-gray-50">
@@ -57,7 +67,7 @@ export function MessageItem({
         </div>
         {message.content && (
           <div className="text-sm whitespace-pre-wrap break-words text-gray-800">
-            {message.content}
+            {linkify(message.content)}
           </div>
         )}
         {message.imageUrl && (
@@ -136,6 +146,15 @@ export function MessageItem({
             title="Répondre dans un fil"
           >
             💬
+          </button>
+        )}
+        {isMine && onDelete && (
+          <button
+            onClick={handleDelete}
+            className="hover:bg-red-50 hover:text-red-600 rounded px-1 text-xs text-gray-600"
+            title="Supprimer"
+          >
+            🗑️
           </button>
         )}
       </div>
