@@ -80,12 +80,12 @@ export function ThreadPanel({
   }, [parentId, channelId]);
 
   return (
-    <aside className="w-[380px] flex-shrink-0 border-l border-gray-200 flex flex-col bg-white">
-      <header className="border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <h2 className="font-bold text-sm">Fil de discussion</h2>
+    <aside className="w-[380px] flex-shrink-0 border-l border-noxias-border flex flex-col bg-noxias-bg">
+      <header className="border-b border-noxias-border px-4 py-3 flex items-center justify-between">
+        <h2 className="font-bold text-sm text-white">Fil de discussion</h2>
         <button
           onClick={onClose}
-          className="text-gray-500 hover:text-gray-800 text-xl leading-none"
+          className="text-noxias-textMuted hover:text-white text-xl leading-none"
           aria-label="Fermer"
         >
           ×
@@ -94,7 +94,7 @@ export function ThreadPanel({
 
       <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-3">
         {loading ? (
-          <div className="text-gray-400 text-sm">Chargement...</div>
+          <div className="text-noxias-textMuted text-sm">Chargement...</div>
         ) : parent ? (
           <>
             <ul>
@@ -105,7 +105,7 @@ export function ThreadPanel({
                 compact
               />
             </ul>
-            <div className="my-3 border-t border-gray-200" />
+            <div className="my-3 border-t border-noxias-border" />
             <ul className="space-y-1">
               {replies.map((r) => (
                 <MessageItem
@@ -120,14 +120,16 @@ export function ThreadPanel({
             <div ref={bottomRef} />
           </>
         ) : (
-          <div className="text-gray-400 text-sm">Message introuvable</div>
+          <div className="text-noxias-textMuted text-sm">
+            Message introuvable
+          </div>
         )}
       </div>
 
       <div className="px-3 pb-3">
         <MessageInput
           onSend={(content, imageUrl) => onReply(content, imageUrl)}
-          placeholder="Répondre dans le fil..."
+          placeholder="Rebondir dans le fil..."
         />
       </div>
     </aside>

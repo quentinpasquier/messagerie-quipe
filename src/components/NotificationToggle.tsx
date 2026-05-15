@@ -20,8 +20,8 @@ export function NotificationToggle() {
   if (perm === "denied") {
     return (
       <span
-        className="text-xs text-gray-500"
-        title="Notifications bloquées dans les réglages du navigateur"
+        className="text-xs text-noxias-textMuted"
+        title="Bloquées dans ton navigateur"
       >
         🔕
       </span>
@@ -40,8 +40,8 @@ export function NotificationToggle() {
   return (
     <button
       onClick={enable}
-      className="text-xs text-gray-400 hover:text-white"
-      title="Activer les notifications système"
+      className="text-xs text-noxias-textMuted hover:text-noxias-green"
+      title="Activer les notifs pour pas rater un deal"
     >
       🔔 Activer
     </button>

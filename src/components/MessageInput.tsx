@@ -68,25 +68,25 @@ export function MessageInput({
       }
       setPendingImage(data.url);
     } catch {
-      setError("Erreur réseau");
+      setError("Réseau dans les choux");
     } finally {
       setUploading(false);
     }
   }
 
   return (
-    <div className="border border-gray-300 rounded-lg focus-within:border-gray-400 bg-white">
+    <div className="border border-noxias-border rounded-lg focus-within:border-noxias-green bg-noxias-surface transition-colors">
       {pendingImage && (
         <div className="px-2 pt-2 flex items-start gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={pendingImage}
             alt=""
-            className="max-h-32 rounded border border-gray-200"
+            className="max-h-32 rounded border border-noxias-border"
           />
           <button
             onClick={() => setPendingImage(null)}
-            className="text-xs text-gray-500 hover:text-red-600"
+            className="text-xs text-noxias-textMuted hover:text-red-400"
             title="Retirer"
           >
             ✕
@@ -99,15 +99,15 @@ export function MessageInput({
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         rows={2}
-        className="w-full resize-none px-3 py-2 text-sm focus:outline-none rounded-lg"
+        className="w-full resize-none px-3 py-2 text-sm focus:outline-none rounded-lg bg-transparent text-white placeholder-noxias-textMuted"
       />
       <div className="flex items-center justify-between px-2 pb-2">
         <div className="flex items-center gap-2">
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading || sending}
-            className="text-gray-500 hover:text-gray-800 disabled:opacity-50"
-            title="Ajouter une image"
+            className="text-noxias-textMuted hover:text-noxias-green disabled:opacity-50"
+            title="Joindre une image"
           >
             📎
           </button>
@@ -119,14 +119,16 @@ export function MessageInput({
             className="hidden"
           />
           {uploading && (
-            <span className="text-xs text-gray-500">Upload...</span>
+            <span className="text-xs text-noxias-textMuted">
+              Upload en cours...
+            </span>
           )}
-          {error && <span className="text-xs text-red-600">{error}</span>}
+          {error && <span className="text-xs text-red-400">{error}</span>}
         </div>
         <button
           onClick={submit}
           disabled={(!value.trim() && !pendingImage) || sending || uploading}
-          className="text-sm bg-accent text-white px-3 py-1 rounded disabled:opacity-40 hover:bg-emerald-700"
+          className="text-sm bg-noxias-green text-noxias-bg font-semibold px-3 py-1 rounded disabled:opacity-40 hover:bg-noxias-greenDark transition-colors"
         >
           Envoyer
         </button>

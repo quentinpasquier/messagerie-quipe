@@ -158,14 +158,22 @@ export function ChannelView({ me, channel }: Props) {
 
   const typingNames = Object.keys(typingUsers);
 
+  const placeholder = channel.isDM
+    ? `Glisser un mot à ${channel.name}...`
+    : `Pitcher dans #${channel.name}...`;
+
   return (
-    <div className="flex h-full min-w-0">
+    <div className="flex h-full min-w-0 bg-noxias-bg text-noxias-text">
       <section className="flex-1 flex flex-col min-w-0">
-        <header className="border-b border-gray-200 px-5 py-3 flex items-center gap-2">
-          <span className="text-gray-500">{channel.isDM ? "@" : "#"}</span>
-          <h1 className="font-bold text-lg truncate">{channel.name}</h1>
+        <header className="border-b border-noxias-border px-5 py-3 flex items-center gap-2 bg-noxias-bg">
+          <span className="text-noxias-textMuted">
+            {channel.isDM ? "@" : "#"}
+          </span>
+          <h1 className="font-bold text-lg truncate text-white">
+            {channel.name}
+          </h1>
           {channel.description && (
-            <span className="text-sm text-gray-500 ml-3 truncate">
+            <span className="text-sm text-noxias-textMuted ml-3 truncate">
               {channel.description}
             </span>
           )}
@@ -176,10 +184,12 @@ export function ChannelView({ me, channel }: Props) {
           className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4"
         >
           {loading ? (
-            <div className="text-gray-400 text-sm">Chargement...</div>
+            <div className="text-noxias-textMuted text-sm">
+              Chargement... (le CRM s'échauffe)
+            </div>
           ) : messages.length === 0 ? (
-            <div className="text-gray-400 text-sm">
-              Aucun message pour l'instant. Lance la conversation !
+            <div className="text-noxias-textMuted text-sm italic">
+              Silence radio. À toi l'ouverture. 🎤
             </div>
           ) : (
             <ul className="space-y-1">
@@ -197,11 +207,11 @@ export function ChannelView({ me, channel }: Props) {
           <div ref={bottomRef} />
         </div>
 
-        <div className="px-5 py-2 text-xs text-gray-500 h-6">
+        <div className="px-5 py-2 text-xs text-noxias-textMuted h-6">
           {typingNames.length > 0 && (
             <span>
               {typingNames.slice(0, 3).join(", ")}{" "}
-              {typingNames.length === 1 ? "écrit" : "écrivent"}...
+              {typingNames.length === 1 ? "est au phone" : "sont au phone"}...
             </span>
           )}
         </div>
@@ -210,9 +220,7 @@ export function ChannelView({ me, channel }: Props) {
           <MessageInput
             onSend={(content, imageUrl) => sendMessage(content, imageUrl, null)}
             onTyping={emitTyping}
-            placeholder={`Envoyer un message ${
-              channel.isDM ? "à @" : "dans #"
-            }${channel.name}`}
+            placeholder={placeholder}
           />
         </div>
       </section>

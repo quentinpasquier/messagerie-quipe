@@ -28,8 +28,8 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       }
       router.push("/");
       router.refresh();
-    } catch (err) {
-      setError("Erreur réseau");
+    } catch {
+      setError("Réseau dans les choux. Réessaie.");
     } finally {
       setLoading(false);
     }
@@ -39,48 +39,57 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     <form onSubmit={onSubmit} className="space-y-4">
       {mode === "signup" && (
         <div>
-          <label className="block text-sm font-medium mb-1">Nom</label>
+          <label className="block text-sm font-medium mb-1 text-noxias-text">
+            Nom
+          </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Prénom Nom"
+            className="w-full rounded border border-noxias-border bg-noxias-bg px-3 py-2 text-white placeholder-noxias-textMuted focus:outline-none focus:border-noxias-green"
           />
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium mb-1">Email</label>
+        <label className="block text-sm font-medium mb-1 text-noxias-text">
+          Email pro
+        </label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="prenom@noxias.com"
+          className="w-full rounded border border-noxias-border bg-noxias-bg px-3 py-2 text-white placeholder-noxias-textMuted focus:outline-none focus:border-noxias-green"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Mot de passe</label>
+        <label className="block text-sm font-medium mb-1 text-noxias-text">
+          Mot de passe
+        </label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Pas 'azerty123'"
+          className="w-full rounded border border-noxias-border bg-noxias-bg px-3 py-2 text-white placeholder-noxias-textMuted focus:outline-none focus:border-noxias-green"
         />
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded bg-accent py-2 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        className="w-full rounded bg-noxias-green py-2 font-semibold text-noxias-bg hover:bg-noxias-greenDark disabled:opacity-50 transition-colors"
       >
         {loading
           ? "..."
           : mode === "login"
-          ? "Se connecter"
-          : "Créer le compte"}
+          ? "Au taquet"
+          : "Rejoindre l'équipe"}
       </button>
     </form>
   );

@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     general = await prisma.channel.create({
       data: {
         name: "général",
-        description: "Canal général de l'équipe",
+        description: "Le QG. Tout le monde traîne ici.",
         type: "PUBLIC",
       },
     });

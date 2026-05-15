@@ -11,6 +11,8 @@ type Me = {
   image: string | null;
 };
 
+const INPUT = "w-full rounded border border-noxias-border bg-noxias-surface px-3 py-2 text-white placeholder-noxias-textMuted focus:outline-none focus:border-noxias-green";
+
 export function SettingsForm({ me }: { me: Me }) {
   const router = useRouter();
   const [name, setName] = useState(me.name);
@@ -39,7 +41,6 @@ export function SettingsForm({ me }: { me: Me }) {
         setMsg({ type: "err", text: data.error || "Erreur upload" });
         return;
       }
-      // Persiste immédiatement le nouvel avatar.
       const patch = await fetch("/api/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -51,10 +52,10 @@ export function SettingsForm({ me }: { me: Me }) {
         return;
       }
       setImage(data.url);
-      setMsg({ type: "ok", text: "Photo de profil mise à jour" });
+      setMsg({ type: "ok", text: "Belle photo, tu vas closer." });
       router.refresh();
     } catch {
-      setMsg({ type: "err", text: "Erreur réseau" });
+      setMsg({ type: "err", text: "Réseau dans les choux" });
     } finally {
       setUploading(false);
     }
@@ -86,7 +87,7 @@ export function SettingsForm({ me }: { me: Me }) {
         body.currentPassword = currentPassword;
       }
       if (Object.keys(body).length === 0) {
-        setMsg({ type: "err", text: "Aucun changement" });
+        setMsg({ type: "err", text: "Rien n'a changé." });
         return;
       }
       const res = await fetch("/api/me", {
@@ -99,7 +100,7 @@ export function SettingsForm({ me }: { me: Me }) {
         setMsg({ type: "err", text: data.error || "Erreur" });
         return;
       }
-      setMsg({ type: "ok", text: "Profil mis à jour" });
+      setMsg({ type: "ok", text: "Profil mis à jour. Tu es prêt à closer." });
       setNewPassword("");
       setCurrentPassword("");
       router.refresh();
@@ -111,19 +112,19 @@ export function SettingsForm({ me }: { me: Me }) {
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="font-semibold mb-3">Photo de profil</h2>
+        <h2 className="font-semibold mb-3 text-white">Photo de profil</h2>
         <div className="flex items-center gap-4">
           <Avatar
             user={{ id: me.id, name, image }}
             size="lg"
-            ringClass="ring-white"
+            ringClass="ring-noxias-bg"
           />
           <div className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="text-sm bg-gray-800 text-white px-3 py-1.5 rounded hover:bg-gray-700 disabled:opacity-50"
+              className="text-sm bg-noxias-secondary text-white px-3 py-1.5 rounded hover:bg-noxias-secondaryHover disabled:opacity-50 border border-noxias-border"
             >
               {uploading ? "Upload..." : "Changer la photo"}
             </button>
@@ -131,7 +132,7 @@ export function SettingsForm({ me }: { me: Me }) {
               <button
                 type="button"
                 onClick={removeAvatar}
-                className="text-xs text-gray-500 hover:text-red-600 text-left"
+                className="text-xs text-noxias-textMuted hover:text-red-400 text-left"
               >
                 Retirer la photo
               </button>
@@ -149,37 +150,41 @@ export function SettingsForm({ me }: { me: Me }) {
 
       <form onSubmit={save} className="space-y-6">
         <section>
-          <h2 className="font-semibold mb-3">Informations</h2>
+          <h2 className="font-semibold mb-3 text-white">Informations</h2>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Nom</label>
+              <label className="block text-sm font-medium mb-1 text-noxias-text">
+                Nom
+              </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded border border-gray-300 px-3 py-2"
+                className={INPUT}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label className="block text-sm font-medium mb-1 text-noxias-text">
+                Email
+              </label>
               <input
                 type="email"
                 value={me.email}
                 disabled
-                className="w-full rounded border border-gray-200 bg-gray-50 px-3 py-2 text-gray-500"
+                className="w-full rounded border border-noxias-borderSoft bg-noxias-surfaceSoft px-3 py-2 text-noxias-textMuted"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                L'email ne peut pas être modifié.
+              <p className="text-xs text-noxias-textMuted mt-1">
+                L'email est gravé dans le marbre.
               </p>
             </div>
           </div>
         </section>
 
         <section>
-          <h2 className="font-semibold mb-3">Mot de passe</h2>
+          <h2 className="font-semibold mb-3 text-white">Mot de passe</h2>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-noxias-text">
                 Mot de passe actuel
               </label>
               <input
@@ -187,11 +192,11 @@ export function SettingsForm({ me }: { me: Me }) {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 autoComplete="current-password"
-                className="w-full rounded border border-gray-300 px-3 py-2"
+                className={INPUT}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium mb-1 text-noxias-text">
                 Nouveau mot de passe
               </label>
               <input
@@ -200,10 +205,10 @@ export function SettingsForm({ me }: { me: Me }) {
                 onChange={(e) => setNewPassword(e.target.value)}
                 autoComplete="new-password"
                 minLength={6}
-                className="w-full rounded border border-gray-300 px-3 py-2"
+                className={INPUT}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Laisse vide si tu ne veux pas le changer.
+              <p className="text-xs text-noxias-textMuted mt-1">
+                Laisse vide pour garder l'ancien.
               </p>
             </div>
           </div>
@@ -212,7 +217,7 @@ export function SettingsForm({ me }: { me: Me }) {
         {msg && (
           <p
             className={`text-sm ${
-              msg.type === "ok" ? "text-emerald-600" : "text-red-600"
+              msg.type === "ok" ? "text-noxias-green" : "text-red-400"
             }`}
           >
             {msg.text}
@@ -222,7 +227,7 @@ export function SettingsForm({ me }: { me: Me }) {
         <button
           type="submit"
           disabled={saving}
-          className="bg-accent text-white px-4 py-2 rounded hover:bg-emerald-700 disabled:opacity-50"
+          className="bg-noxias-green text-noxias-bg font-semibold px-4 py-2 rounded hover:bg-noxias-greenDark disabled:opacity-50 transition-colors"
         >
           {saving ? "..." : "Enregistrer"}
         </button>

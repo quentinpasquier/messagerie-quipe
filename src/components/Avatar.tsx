@@ -3,12 +3,12 @@
 import { useStatus } from "./StatusProvider";
 
 const COLORS = [
-  "from-purple-500 to-pink-500",
-  "from-blue-500 to-cyan-500",
-  "from-emerald-500 to-teal-500",
-  "from-orange-500 to-red-500",
-  "from-yellow-500 to-orange-500",
-  "from-indigo-500 to-purple-500",
+  "from-[#3cc879] to-[#2fa861]",
+  "from-[#221932] to-[#3cc879]",
+  "from-emerald-400 to-emerald-700",
+  "from-fuchsia-600 to-[#221932]",
+  "from-[#3cc879] to-teal-700",
+  "from-purple-600 to-[#221932]",
 ];
 
 function hashColor(name: string): string {
@@ -44,24 +44,24 @@ const DOT_SIZES = {
 };
 
 export const STATUS_COLOR: Record<string, string> = {
-  ONLINE: "bg-emerald-500",
+  ONLINE: "bg-noxias-green",
   BUSY: "bg-red-500",
   AWAY: "bg-yellow-500",
-  OFFLINE: "bg-gray-400",
+  OFFLINE: "bg-gray-500",
 };
 
 export const STATUS_LABEL: Record<string, string> = {
-  ONLINE: "En ligne",
-  BUSY: "Occupé",
-  AWAY: "Absent",
-  OFFLINE: "Hors ligne",
+  ONLINE: "Au front",
+  BUSY: "En closing",
+  AWAY: "Pause café",
+  OFFLINE: "Hors zone",
 };
 
 export function Avatar({
   user,
   size = "md",
   showStatus = true,
-  ringClass = "ring-white",
+  ringClass = "ring-noxias-bg",
 }: {
   user: { id: string; name: string; image: string | null };
   size?: keyof typeof SIZES;

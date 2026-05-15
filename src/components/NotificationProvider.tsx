@@ -22,7 +22,7 @@ const NotificationContext = createContext<Ctx>({
   markRead: () => {},
 });
 
-const BASE_TITLE = "Messagerie d'équipe";
+const BASE_TITLE = "Noxias Chat";
 
 function canShowOSNotification(): boolean {
   return (
