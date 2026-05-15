@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Avatar } from "./Avatar";
+import { Avatar, STATUS_COLOR } from "./Avatar";
 import { StatusPicker } from "./StatusPicker";
 import { useStatus } from "./StatusProvider";
-import { STATUS_COLOR } from "./Avatar";
+import { useUnread } from "./NotificationProvider";
 
 type Channel = { id: string; name: string };
 type DM = {
@@ -24,24 +24,78 @@ type SidebarUser = {
 };
 type Me = { id: string; name: string; email: string; image: string | null };
 
-function UserRow({
-  user,
+function UnreadBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span className="bg-red-500 text-white text-[10px] font-semibold rounded-full px-1.5 min-w-[18px] h-[18px] grid place-items-center">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
+function ChannelRow({
+  channel,
   active,
+}: {
+  channel: Channel;
+  active: boolean;
+}) {
+  const unread = useUnread(channel.id);
+  const hasUnread = unread > 0 && !active;
+  return (
+    <Link
+      href={`/c/${channel.id}`}
+      className={`flex items-center gap-2 px-2 py-1 rounded text-sm ${
+        active
+          ? "bg-sidebarActive text-white"
+          : hasUnread
+          ? "text-white font-bold hover:bg-sidebarHover"
+          : "text-gray-300 hover:bg-sidebarHover"
+      }`}
+    >
+      <span className={hasUnread ? "text-white" : "text-gray-400"}>#</span>
+      <span className="flex-1 truncate">{channel.name}</span>
+      <UnreadBadge count={hasUnread ? unread : 0} />
+    </Link>
+  );
+}
+
+function DMRow({ dm, active }: { dm: DM; active: boolean }) {
+  const unread = useUnread(dm.channelId);
+  const status = useStatus(dm.userId);
+  const hasUnread = unread > 0 && !active;
+  return (
+    <Link
+      href={`/c/${dm.channelId}`}
+      className={`flex items-center gap-2 px-2 py-1 rounded text-sm ${
+        active
+          ? "bg-sidebarActive text-white"
+          : hasUnread
+          ? "text-white font-bold hover:bg-sidebarHover"
+          : "text-gray-300 hover:bg-sidebarHover"
+      }`}
+    >
+      <span
+        className={`inline-block w-2 h-2 rounded-full ${STATUS_COLOR[status] || STATUS_COLOR.OFFLINE}`}
+      />
+      <span className="flex-1 truncate">{dm.name}</span>
+      <UnreadBadge count={hasUnread ? unread : 0} />
+    </Link>
+  );
+}
+
+function TeammateRow({
+  user,
   onClick,
 }: {
   user: { id: string; name: string; image: string | null };
-  active: boolean;
   onClick: () => void;
 }) {
   const status = useStatus(user.id);
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left flex items-center gap-2 px-2 py-1 rounded text-sm ${
-        active
-          ? "bg-sidebarActive text-white"
-          : "hover:bg-sidebarHover text-gray-300"
-      }`}
+      className="w-full text-left flex items-center gap-2 px-2 py-1 rounded text-sm hover:bg-sidebarHover text-gray-300"
     >
       <span
         className={`inline-block w-2 h-2 rounded-full ${STATUS_COLOR[status] || STATUS_COLOR.OFFLINE}`}
@@ -151,17 +205,7 @@ export function Sidebar({
           <ul>
             {channels.map((c) => (
               <li key={c.id}>
-                <Link
-                  href={`/c/${c.id}`}
-                  className={`flex items-center gap-2 px-2 py-1 rounded text-sm ${
-                    currentId === c.id
-                      ? "bg-sidebarActive text-white"
-                      : "hover:bg-sidebarHover text-gray-300"
-                  }`}
-                >
-                  <span className="text-gray-400">#</span>
-                  <span className="truncate">{c.name}</span>
-                </Link>
+                <ChannelRow channel={c} active={currentId === c.id} />
               </li>
             ))}
             {channels.length === 0 && (
@@ -179,17 +223,7 @@ export function Sidebar({
           <ul>
             {dms.map((d) => (
               <li key={d.channelId}>
-                <Link
-                  href={`/c/${d.channelId}`}
-                  className={`flex items-center gap-2 px-2 py-1 rounded text-sm ${
-                    currentId === d.channelId
-                      ? "bg-sidebarActive text-white"
-                      : "hover:bg-sidebarHover text-gray-300"
-                  }`}
-                >
-                  <DMStatusDot userId={d.userId} />
-                  <span className="truncate">{d.name}</span>
-                </Link>
+                <DMRow dm={d} active={currentId === d.channelId} />
               </li>
             ))}
             {dms.length === 0 && (
@@ -210,9 +244,8 @@ export function Sidebar({
             <ul>
               {otherUsers.map((u) => (
                 <li key={u.id}>
-                  <UserRow
+                  <TeammateRow
                     user={{ id: u.id, name: u.name, image: u.image }}
-                    active={false}
                     onClick={() => openDM(u.id)}
                   />
                 </li>
@@ -237,14 +270,5 @@ export function Sidebar({
         </button>
       </div>
     </aside>
-  );
-}
-
-function DMStatusDot({ userId }: { userId: string }) {
-  const status = useStatus(userId);
-  return (
-    <span
-      className={`inline-block w-2 h-2 rounded-full ${STATUS_COLOR[status] || STATUS_COLOR.OFFLINE}`}
-    />
   );
 }

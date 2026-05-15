@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/Sidebar";
 import { StatusProvider } from "@/components/StatusProvider";
+import { NotificationProvider } from "@/components/NotificationProvider";
 
 export default async function AppLayout({
   children,
@@ -59,20 +60,22 @@ export default async function AppLayout({
 
   return (
     <StatusProvider initial={initialStatuses}>
-      <div className="flex h-screen w-screen overflow-hidden bg-white">
-        <Sidebar
-          me={{
-            id: me.id,
-            name: me.name,
-            email: me.email,
-            image: me.image,
-          }}
-          channels={channels}
-          dms={dmList}
-          users={users}
-        />
-        <main className="flex-1 flex flex-col min-w-0">{children}</main>
-      </div>
+      <NotificationProvider meId={me.id}>
+        <div className="flex h-screen w-screen overflow-hidden bg-white">
+          <Sidebar
+            me={{
+              id: me.id,
+              name: me.name,
+              email: me.email,
+              image: me.image,
+            }}
+            channels={channels}
+            dms={dmList}
+            users={users}
+          />
+          <main className="flex-1 flex flex-col min-w-0">{children}</main>
+        </div>
+      </NotificationProvider>
     </StatusProvider>
   );
 }

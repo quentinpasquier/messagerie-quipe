@@ -47,7 +47,6 @@ const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(async () => {
-  // Au démarrage, tout le monde est OFFLINE jusqu'à ce qu'il se reconnecte.
   await prisma.user
     .updateMany({ data: { status: "OFFLINE" } })
     .catch((e) => console.error("status reset error:", e));
@@ -65,7 +64,6 @@ app.prepare().then(async () => {
 
   (globalThis as any).io = io;
 
-  // userId → set of socket ids
   const userSockets = new Map<string, Set<string>>();
 
   io.use(async (socket, next) => {
@@ -77,6 +75,21 @@ app.prepare().then(async () => {
 
   io.on("connection", async (socket) => {
     const userId = (socket.data as { userId: string }).userId;
+
+    // Personal room (for adding to new channels mid-session).
+    socket.join(`user:${userId}`);
+
+    // Auto-join all member channels so message:new broadcasts reach
+    // even non-currently-open channels (for unread badges).
+    try {
+      const memberships = await prisma.channelMember.findMany({
+        where: { userId },
+        select: { channelId: true },
+      });
+      for (const m of memberships) socket.join(`channel:${m.channelId}`);
+    } catch (e) {
+      console.error("auto-join error:", e);
+    }
 
     let set = userSockets.get(userId);
     if (!set) {
@@ -104,17 +117,19 @@ app.prepare().then(async () => {
       }
     }
 
-    socket.on("channel:join", (channelId: string) => {
-      socket.join(`channel:${channelId}`);
+    // "viewing:X" tracks who is currently looking at channel X — used
+    // for the typing indicator so non-viewers don't see it.
+    socket.on("viewing:join", (channelId: string) => {
+      socket.join(`viewing:${channelId}`);
     });
-    socket.on("channel:leave", (channelId: string) => {
-      socket.leave(`channel:${channelId}`);
+    socket.on("viewing:leave", (channelId: string) => {
+      socket.leave(`viewing:${channelId}`);
     });
     socket.on(
       "typing",
       (payload: { channelId: string; userId: string; name: string }) => {
         socket
-          .to(`channel:${payload.channelId}`)
+          .to(`viewing:${payload.channelId}`)
           .emit("typing", { userId: payload.userId, name: payload.name });
       }
     );

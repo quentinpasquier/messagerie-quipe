@@ -50,7 +50,7 @@ export function ChannelView({ me, channel }: Props) {
   // Socket subscription
   useEffect(() => {
     const socket = getSocket();
-    socket.emit("channel:join", channel.id);
+    socket.emit("viewing:join", channel.id);
 
     const onMessage = (m: MessageDTO) => {
       if (m.channelId !== channel.id) return;
@@ -96,7 +96,7 @@ export function ChannelView({ me, channel }: Props) {
     socket.on("typing", onTyping);
 
     return () => {
-      socket.emit("channel:leave", channel.id);
+      socket.emit("viewing:leave", channel.id);
       socket.off("message:new", onMessage);
       socket.off("reactions:update", onReactions);
       socket.off("typing", onTyping);

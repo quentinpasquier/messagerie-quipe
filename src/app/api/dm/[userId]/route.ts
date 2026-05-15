@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { attachUsersToChannel } from "@/lib/realtime";
 
 // Trouve ou crée un canal DM entre l'utilisateur courant et :userId.
 export async function POST(
@@ -40,6 +41,7 @@ export async function POST(
       },
       include: { members: true },
     });
+    attachUsersToChannel([me.id, other.id], dm.id);
   }
 
   return NextResponse.json({ channelId: dm.id });

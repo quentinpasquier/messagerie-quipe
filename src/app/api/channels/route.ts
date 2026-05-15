@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { attachUsersToChannel } from "@/lib/realtime";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -41,6 +42,11 @@ export async function POST(req: Request) {
       data: others.map((u) => ({ userId: u.id, channelId: channel.id })),
     });
   }
+
+  attachUsersToChannel(
+    [user.id, ...others.map((u) => u.id)],
+    channel.id
+  );
 
   return NextResponse.json({ channel });
 }
