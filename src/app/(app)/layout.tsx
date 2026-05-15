@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/Sidebar";
+import { StatusProvider } from "@/components/StatusProvider";
 
 export default async function AppLayout({
   children,
@@ -27,14 +28,16 @@ export default async function AppLayout({
     },
     include: {
       members: {
-        include: { user: { select: { id: true, name: true } } },
+        include: {
+          user: { select: { id: true, name: true, image: true, status: true } },
+        },
       },
     },
   });
 
   const users = await prisma.user.findMany({
     where: { id: { not: me.id } },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, image: true, status: true },
     orderBy: { name: "asc" },
   });
 
@@ -44,18 +47,32 @@ export default async function AppLayout({
       channelId: dm.id,
       userId: other?.userId ?? "",
       name: other?.user.name ?? "?",
+      image: other?.user.image ?? null,
     };
   });
 
+  const initialStatuses: Record<string, string> = { [me.id]: me.status };
+  for (const u of users) initialStatuses[u.id] = u.status;
+  for (const dm of dms) {
+    for (const m of dm.members) initialStatuses[m.userId] = m.user.status;
+  }
+
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white">
-      <Sidebar
-        me={{ id: me.id, name: me.name, email: me.email }}
-        channels={channels}
-        dms={dmList}
-        users={users}
-      />
-      <main className="flex-1 flex flex-col min-w-0">{children}</main>
-    </div>
+    <StatusProvider initial={initialStatuses}>
+      <div className="flex h-screen w-screen overflow-hidden bg-white">
+        <Sidebar
+          me={{
+            id: me.id,
+            name: me.name,
+            email: me.email,
+            image: me.image,
+          }}
+          channels={channels}
+          dms={dmList}
+          users={users}
+        />
+        <main className="flex-1 flex flex-col min-w-0">{children}</main>
+      </div>
+    </StatusProvider>
   );
 }

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
+const USER_SELECT = { id: true, name: true, image: true, status: true } as const;
+
 export async function GET(
   _req: Request,
   { params }: { params: { id: string } }
@@ -12,7 +14,7 @@ export async function GET(
   const parent = await prisma.message.findUnique({
     where: { id: params.id },
     include: {
-      user: { select: { id: true, name: true, image: true } },
+      user: { select: USER_SELECT },
       reactions: { include: { user: { select: { id: true, name: true } } } },
       _count: { select: { replies: true } },
     },
@@ -28,7 +30,7 @@ export async function GET(
     where: { parentId: params.id },
     orderBy: { createdAt: "asc" },
     include: {
-      user: { select: { id: true, name: true, image: true } },
+      user: { select: USER_SELECT },
       reactions: { include: { user: { select: { id: true, name: true } } } },
     },
   });

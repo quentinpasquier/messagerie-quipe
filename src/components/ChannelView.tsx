@@ -121,11 +121,19 @@ export function ChannelView({ me, channel }: Props) {
   }, []);
 
   const sendMessage = useCallback(
-    async (content: string, parentId?: string | null) => {
+    async (
+      content: string,
+      imageUrl?: string | null,
+      parentId?: string | null
+    ) => {
       await fetch(`/api/channels/${channel.id}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, parentId: parentId ?? null }),
+        body: JSON.stringify({
+          content,
+          imageUrl: imageUrl ?? null,
+          parentId: parentId ?? null,
+        }),
       });
     },
     [channel.id]
@@ -200,7 +208,7 @@ export function ChannelView({ me, channel }: Props) {
 
         <div className="px-5 pb-4">
           <MessageInput
-            onSend={(content) => sendMessage(content, null)}
+            onSend={(content, imageUrl) => sendMessage(content, imageUrl, null)}
             onTyping={emitTyping}
             placeholder={`Envoyer un message ${
               channel.isDM ? "à @" : "dans #"
@@ -215,7 +223,9 @@ export function ChannelView({ me, channel }: Props) {
           channelId={channel.id}
           parentId={threadParentId}
           onClose={() => setThreadParentId(null)}
-          onReply={(content) => sendMessage(content, threadParentId)}
+          onReply={(content, imageUrl) =>
+            sendMessage(content, imageUrl, threadParentId)
+          }
           onReact={toggleReaction}
         />
       )}

@@ -7,21 +7,27 @@ export function MessageInput({
   onTyping,
   placeholder,
 }: {
-  onSend: (content: string) => Promise<void> | void;
+  onSend: (content: string, imageUrl?: string | null) => Promise<void> | void;
   onTyping?: () => void;
   placeholder?: string;
 }) {
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const lastTypingRef = useRef(0);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   async function submit() {
     const v = value.trim();
-    if (!v || sending) return;
+    if ((!v && !pendingImage) || sending) return;
     setSending(true);
+    const imageUrl = pendingImage;
     setValue("");
+    setPendingImage(null);
     try {
-      await onSend(v);
+      await onSend(v, imageUrl);
     } finally {
       setSending(false);
     }
@@ -45,8 +51,48 @@ export function MessageInput({
     }
   }
 
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Erreur upload");
+        return;
+      }
+      setPendingImage(data.url);
+    } catch {
+      setError("Erreur réseau");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <div className="border border-gray-300 rounded-lg focus-within:border-gray-400 bg-white">
+      {pendingImage && (
+        <div className="px-2 pt-2 flex items-start gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={pendingImage}
+            alt=""
+            className="max-h-32 rounded border border-gray-200"
+          />
+          <button
+            onClick={() => setPendingImage(null)}
+            className="text-xs text-gray-500 hover:text-red-600"
+            title="Retirer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <textarea
         value={value}
         onChange={onChange}
@@ -55,10 +101,31 @@ export function MessageInput({
         rows={2}
         className="w-full resize-none px-3 py-2 text-sm focus:outline-none rounded-lg"
       />
-      <div className="flex justify-end px-2 pb-2">
+      <div className="flex items-center justify-between px-2 pb-2">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading || sending}
+            className="text-gray-500 hover:text-gray-800 disabled:opacity-50"
+            title="Ajouter une image"
+          >
+            📎
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            onChange={onFile}
+            className="hidden"
+          />
+          {uploading && (
+            <span className="text-xs text-gray-500">Upload...</span>
+          )}
+          {error && <span className="text-xs text-red-600">{error}</span>}
+        </div>
         <button
           onClick={submit}
-          disabled={!value.trim() || sending}
+          disabled={(!value.trim() && !pendingImage) || sending || uploading}
           className="text-sm bg-accent text-white px-3 py-1 rounded disabled:opacity-40 hover:bg-emerald-700"
         >
           Envoyer

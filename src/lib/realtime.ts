@@ -6,7 +6,9 @@ export function getIO(): SocketIOServer | null {
 }
 
 export function emitToChannel(channelId: string, event: string, payload: unknown) {
-  const io = getIO();
-  if (!io) return;
-  io.to(`channel:${channelId}`).emit(event, payload);
+  getIO()?.to(`channel:${channelId}`).emit(event, payload);
+}
+
+export function broadcastUserStatus(userId: string, status: string) {
+  getIO()?.emit("user:status", { userId, status });
 }

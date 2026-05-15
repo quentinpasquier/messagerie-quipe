@@ -18,7 +18,7 @@ export function ThreadPanel({
   channelId: string;
   parentId: string;
   onClose: () => void;
-  onReply: (content: string) => Promise<void> | void;
+  onReply: (content: string, imageUrl?: string | null) => Promise<void> | void;
   onReact: (messageId: string, emoji: string) => void;
 }) {
   const [parent, setParent] = useState<MessageDTO | null>(null);
@@ -126,7 +126,7 @@ export function ThreadPanel({
 
       <div className="px-3 pb-3">
         <MessageInput
-          onSend={(content) => onReply(content)}
+          onSend={(content, imageUrl) => onReply(content, imageUrl)}
           placeholder="Répondre dans le fil..."
         />
       </div>

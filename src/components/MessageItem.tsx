@@ -2,18 +2,9 @@
 
 import { useState } from "react";
 import type { MessageDTO } from "@/types/message";
+import { Avatar } from "./Avatar";
 
 const QUICK_EMOJIS = ["👍", "❤️", "😄", "🎉", "👀", "🚀"];
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((s) => s[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 function timeFmt(iso: string) {
   return new Date(iso).toLocaleTimeString([], {
@@ -37,20 +28,24 @@ export function MessageItem({
 }) {
   const [showPicker, setShowPicker] = useState(false);
 
-  // Regroupe les réactions par emoji
-  const grouped = message.reactions.reduce<Record<string, typeof message.reactions>>(
-    (acc, r) => {
-      (acc[r.emoji] ||= []).push(r);
-      return acc;
-    },
-    {}
-  );
+  const grouped = message.reactions.reduce<
+    Record<string, typeof message.reactions>
+  >((acc, r) => {
+    (acc[r.emoji] ||= []).push(r);
+    return acc;
+  }, {});
 
   return (
     <li className="group relative flex gap-3 px-2 py-1.5 rounded hover:bg-gray-50">
-      <div className="flex-shrink-0 w-9 h-9 rounded bg-gradient-to-br from-purple-500 to-pink-500 text-white grid place-items-center text-xs font-bold">
-        {initials(message.user.name)}
-      </div>
+      <Avatar
+        user={{
+          id: message.user.id,
+          name: message.user.name,
+          image: message.user.image,
+        }}
+        size="md"
+        ringClass="ring-white"
+      />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
           <span className="font-bold text-sm">{message.user.name}</span>
@@ -58,9 +53,27 @@ export function MessageItem({
             {timeFmt(message.createdAt)}
           </span>
         </div>
-        <div className="text-sm whitespace-pre-wrap break-words">
-          {message.content}
-        </div>
+        {message.content && (
+          <div className="text-sm whitespace-pre-wrap break-words">
+            {message.content}
+          </div>
+        )}
+        {message.imageUrl && (
+          <a
+            href={message.imageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mt-1"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={message.imageUrl}
+              alt=""
+              loading="lazy"
+              className="max-w-sm max-h-96 rounded border border-gray-200 object-cover"
+            />
+          </a>
+        )}
 
         {Object.keys(grouped).length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { emitToChannel } from "@/lib/realtime";
 
+const USER_SELECT = { id: true, name: true, image: true, status: true } as const;
+
 export async function GET(
   _req: Request,
   { params }: { params: { id: string } }
@@ -21,7 +23,7 @@ export async function GET(
     where: { channelId: params.id, parentId: null },
     orderBy: { createdAt: "asc" },
     include: {
-      user: { select: { id: true, name: true, image: true } },
+      user: { select: USER_SELECT },
       reactions: {
         include: { user: { select: { id: true, name: true } } },
       },
@@ -42,9 +44,10 @@ export async function POST(
 
   const body = await req.json().catch(() => null);
   const content = String(body?.content ?? "").trim();
+  const imageUrl = body?.imageUrl ? String(body.imageUrl) : null;
   const parentId = body?.parentId ? String(body.parentId) : null;
 
-  if (!content) {
+  if (!content && !imageUrl) {
     return NextResponse.json({ error: "Message vide" }, { status: 400 });
   }
 
@@ -67,12 +70,13 @@ export async function POST(
   const message = await prisma.message.create({
     data: {
       content,
+      imageUrl,
       userId: user.id,
       channelId: params.id,
       parentId,
     },
     include: {
-      user: { select: { id: true, name: true, image: true } },
+      user: { select: USER_SELECT },
       reactions: { include: { user: { select: { id: true, name: true } } } },
       _count: { select: { replies: true } },
     },

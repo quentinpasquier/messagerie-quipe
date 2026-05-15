@@ -3,10 +3,53 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { Avatar } from "./Avatar";
+import { StatusPicker } from "./StatusPicker";
+import { useStatus } from "./StatusProvider";
+import { STATUS_COLOR } from "./Avatar";
 
 type Channel = { id: string; name: string };
-type DM = { channelId: string; userId: string; name: string };
-type Me = { id: string; name: string; email: string };
+type DM = {
+  channelId: string;
+  userId: string;
+  name: string;
+  image: string | null;
+};
+type SidebarUser = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  status: string;
+};
+type Me = { id: string; name: string; email: string; image: string | null };
+
+function UserRow({
+  user,
+  active,
+  onClick,
+}: {
+  user: { id: string; name: string; image: string | null };
+  active: boolean;
+  onClick: () => void;
+}) {
+  const status = useStatus(user.id);
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left flex items-center gap-2 px-2 py-1 rounded text-sm ${
+        active
+          ? "bg-sidebarActive text-white"
+          : "hover:bg-sidebarHover text-gray-300"
+      }`}
+    >
+      <span
+        className={`inline-block w-2 h-2 rounded-full ${STATUS_COLOR[status] || STATUS_COLOR.OFFLINE}`}
+      />
+      <span className="truncate">{user.name}</span>
+    </button>
+  );
+}
 
 export function Sidebar({
   me,
@@ -17,7 +60,7 @@ export function Sidebar({
   me: Me;
   channels: Channel[];
   dms: DM[];
-  users: { id: string; name: string; email: string }[];
+  users: SidebarUser[];
 }) {
   const router = useRouter();
   const params = useParams();
@@ -60,15 +103,23 @@ export function Sidebar({
     router.refresh();
   }
 
-  const usersById = new Map(users.map((u) => [u.id, u]));
   const dmUserIds = new Set(dms.map((d) => d.userId));
   const otherUsers = users.filter((u) => !dmUserIds.has(u.id));
 
   return (
     <aside className="w-64 bg-sidebar text-gray-200 flex flex-col flex-shrink-0">
-      <div className="px-4 py-3 border-b border-white/10">
-        <div className="font-bold text-white">Mon équipe</div>
-        <div className="text-xs text-gray-400 truncate">{me.name}</div>
+      <div className="px-3 py-3 border-b border-white/10 flex items-center gap-2">
+        <Link href="/settings" title="Modifier mon profil">
+          <Avatar
+            user={{ id: me.id, name: me.name, image: me.image }}
+            size="md"
+            ringClass="ring-sidebar"
+          />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-white text-sm truncate">{me.name}</div>
+          <StatusPicker meId={me.id} />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-thin px-2 py-3 space-y-5">
@@ -136,7 +187,7 @@ export function Sidebar({
                       : "hover:bg-sidebarHover text-gray-300"
                   }`}
                 >
-                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+                  <DMStatusDot userId={d.userId} />
                   <span className="truncate">{d.name}</span>
                 </Link>
               </li>
@@ -159,13 +210,11 @@ export function Sidebar({
             <ul>
               {otherUsers.map((u) => (
                 <li key={u.id}>
-                  <button
+                  <UserRow
+                    user={{ id: u.id, name: u.name, image: u.image }}
+                    active={false}
                     onClick={() => openDM(u.id)}
-                    className="w-full text-left flex items-center gap-2 px-2 py-1 rounded text-sm hover:bg-sidebarHover text-gray-300"
-                  >
-                    <span className="inline-block w-2 h-2 rounded-full bg-gray-500" />
-                    <span className="truncate">{u.name}</span>
-                  </button>
+                  />
                 </li>
               ))}
             </ul>
@@ -173,7 +222,13 @@ export function Sidebar({
         )}
       </div>
 
-      <div className="border-t border-white/10 px-3 py-2">
+      <div className="border-t border-white/10 px-3 py-2 flex items-center justify-between">
+        <Link
+          href="/settings"
+          className="text-xs text-gray-400 hover:text-white"
+        >
+          Profil
+        </Link>
         <button
           onClick={logout}
           className="text-xs text-gray-400 hover:text-white"
@@ -182,5 +237,14 @@ export function Sidebar({
         </button>
       </div>
     </aside>
+  );
+}
+
+function DMStatusDot({ userId }: { userId: string }) {
+  const status = useStatus(userId);
+  return (
+    <span
+      className={`inline-block w-2 h-2 rounded-full ${STATUS_COLOR[status] || STATUS_COLOR.OFFLINE}`}
+    />
   );
 }
