@@ -98,7 +98,7 @@ export function StatusPicker({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 text-xs text-noxias-textMuted hover:text-white max-w-full"
+        className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 max-w-full"
         disabled={busy}
       >
         <span
@@ -112,7 +112,7 @@ export function StatusPicker({
         ) : (
           <span>{STATUS_LABEL[current] || current}</span>
         )}
-        <span className="text-noxias-textMuted">▾</span>
+        <span className="text-gray-400">▾</span>
       </button>
       {open && (
         <div className="absolute top-full left-0 mt-1 bg-white text-gray-800 rounded shadow-lg border border-gray-200 py-1 z-20 w-64">

@@ -20,7 +20,7 @@ export function NotificationToggle() {
   if (perm === "denied") {
     return (
       <span
-        className="text-xs text-noxias-textMuted"
+        className="text-xs text-gray-500"
         title="Bloquées dans ton navigateur"
       >
         🔕
@@ -40,7 +40,7 @@ export function NotificationToggle() {
   return (
     <button
       onClick={enable}
-      className="text-xs text-noxias-textMuted hover:text-noxias-green"
+      className="text-xs text-gray-500 hover:text-noxias-greenDark"
       title="Activer les notifs pour pas rater un deal"
     >
       🔔 Activer

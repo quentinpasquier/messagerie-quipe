@@ -76,11 +76,11 @@ export function Avatar({
         <img
           src={user.image}
           alt={user.name}
-          className={`${SIZES[size]} rounded object-cover`}
+          className={`${SIZES[size]} rounded-full object-cover`}
         />
       ) : (
         <div
-          className={`${SIZES[size]} rounded bg-gradient-to-br ${hashColor(
+          className={`${SIZES[size]} rounded-full bg-gradient-to-br ${hashColor(
             user.name
           )} text-white grid place-items-center font-bold`}
         >
