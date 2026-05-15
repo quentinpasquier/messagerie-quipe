@@ -1,0 +1,21 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+*.log
+.DS_Store
+
+# Env
+.env
+.env.local
+.env*.local
+
+# Database
+prisma/*.db
+prisma/*.db-journal
+prisma/migrations/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
