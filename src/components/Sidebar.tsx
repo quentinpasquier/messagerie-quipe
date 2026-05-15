@@ -65,6 +65,11 @@ function DMRow({ dm, active }: { dm: DM; active: boolean }) {
   const unread = useUnread(dm.channelId);
   const status = useStatus(dm.userId);
   const hasUnread = unread > 0 && !active;
+  // Sur fond vert actif, on remplace la pastille verte (invisible) par
+  // un point sombre — sinon on garde la pastille de statut habituelle.
+  const dotClass = active
+    ? "bg-noxias-bg/60"
+    : STATUS_COLOR[status] || STATUS_COLOR.OFFLINE;
   return (
     <Link
       href={`/c/${dm.channelId}`}
@@ -77,7 +82,8 @@ function DMRow({ dm, active }: { dm: DM; active: boolean }) {
       }`}
     >
       <span
-        className={`inline-block w-2 h-2 rounded-full ${STATUS_COLOR[status] || STATUS_COLOR.OFFLINE}`}
+        className={`inline-block w-2 h-2 rounded-full ${dotClass}`}
+        title={active ? undefined : status}
       />
       <span className="flex-1 truncate">{dm.name}</span>
       <UnreadBadge count={hasUnread ? unread : 0} />

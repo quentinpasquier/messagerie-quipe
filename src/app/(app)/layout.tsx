@@ -61,7 +61,7 @@ export default async function AppLayout({
   return (
     <StatusProvider initial={initialStatuses}>
       <NotificationProvider meId={me.id}>
-        <div className="flex h-screen w-screen overflow-hidden bg-noxias-bg">
+        <div className="flex h-screen w-screen overflow-hidden bg-white">
           <Sidebar
             me={{
               id: me.id,

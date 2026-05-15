@@ -36,7 +36,7 @@ export function MessageItem({
   }, {});
 
   return (
-    <li className="group relative flex gap-3 px-2 py-1.5 rounded hover:bg-noxias-surface">
+    <li className="group relative flex gap-3 px-2 py-1.5 rounded hover:bg-gray-50">
       <Avatar
         user={{
           id: message.user.id,
@@ -44,19 +44,19 @@ export function MessageItem({
           image: message.user.image,
         }}
         size="md"
-        ringClass="ring-noxias-bg"
+        ringClass="ring-white"
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-bold text-sm text-white">
+          <span className="font-bold text-sm text-gray-900">
             {message.user.name}
           </span>
-          <span className="text-xs text-noxias-textMuted">
+          <span className="text-xs text-gray-500">
             {timeFmt(message.createdAt)}
           </span>
         </div>
         {message.content && (
-          <div className="text-sm whitespace-pre-wrap break-words text-noxias-text">
+          <div className="text-sm whitespace-pre-wrap break-words text-gray-800">
             {message.content}
           </div>
         )}
@@ -72,7 +72,7 @@ export function MessageItem({
               src={message.imageUrl}
               alt=""
               loading="lazy"
-              className="max-w-sm max-h-96 rounded border border-noxias-border object-cover"
+              className="max-w-sm max-h-96 rounded border border-gray-200 object-cover"
             />
           </a>
         )}
@@ -89,8 +89,8 @@ export function MessageItem({
                   title={title}
                   className={`text-xs px-1.5 py-0.5 rounded-full border ${
                     mine
-                      ? "bg-noxias-green/15 border-noxias-green/60 text-noxias-green"
-                      : "bg-noxias-surface border-noxias-border text-gray-300 hover:bg-noxias-surfaceSoft"
+                      ? "bg-noxias-green/10 border-noxias-green text-noxias-greenDark"
+                      : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   {emoji} {list.length}
@@ -103,7 +103,7 @@ export function MessageItem({
         {!compact && (message._count?.replies ?? 0) > 0 && (
           <button
             onClick={onOpenThread}
-            className="mt-1 text-xs text-noxias-green hover:underline"
+            className="mt-1 text-xs text-noxias-greenDark hover:underline"
           >
             {message._count!.replies}{" "}
             {message._count!.replies === 1 ? "réponse" : "réponses"} — ouvrir le
@@ -112,19 +112,19 @@ export function MessageItem({
         )}
       </div>
 
-      <div className="opacity-0 group-hover:opacity-100 absolute top-0 right-2 -translate-y-1/2 flex gap-1 bg-noxias-surface border border-noxias-border rounded shadow-sm px-1 py-0.5">
+      <div className="opacity-0 group-hover:opacity-100 absolute top-0 right-2 -translate-y-1/2 flex gap-1 bg-white border border-gray-200 rounded shadow-sm px-1 py-0.5">
         {QUICK_EMOJIS.slice(0, 3).map((e) => (
           <button
             key={e}
             onClick={() => onReact(message.id, e)}
-            className="hover:bg-noxias-surfaceSoft rounded px-1 text-sm"
+            className="hover:bg-gray-100 rounded px-1 text-sm"
           >
             {e}
           </button>
         ))}
         <button
           onClick={() => setShowPicker((v) => !v)}
-          className="hover:bg-noxias-surfaceSoft rounded px-1 text-sm"
+          className="hover:bg-gray-100 rounded px-1 text-sm"
           title="Plus d'emojis"
         >
           😀+
@@ -132,7 +132,7 @@ export function MessageItem({
         {!compact && onOpenThread && (
           <button
             onClick={onOpenThread}
-            className="hover:bg-noxias-surfaceSoft rounded px-1 text-xs text-gray-200"
+            className="hover:bg-gray-100 rounded px-1 text-xs text-gray-700"
             title="Répondre dans un fil"
           >
             💬
@@ -141,7 +141,7 @@ export function MessageItem({
       </div>
 
       {showPicker && (
-        <div className="absolute top-6 right-2 z-10 bg-noxias-surface border border-noxias-border rounded shadow-lg p-1 flex gap-1">
+        <div className="absolute top-6 right-2 z-10 bg-white border border-gray-200 rounded shadow-lg p-1 flex gap-1">
           {QUICK_EMOJIS.map((e) => (
             <button
               key={e}
@@ -149,7 +149,7 @@ export function MessageItem({
                 onReact(message.id, e);
                 setShowPicker(false);
               }}
-              className="hover:bg-noxias-surfaceSoft rounded px-1.5 py-1"
+              className="hover:bg-gray-100 rounded px-1.5 py-1"
             >
               {e}
             </button>

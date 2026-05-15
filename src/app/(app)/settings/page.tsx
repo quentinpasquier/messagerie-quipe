@@ -7,10 +7,10 @@ export default async function SettingsPage() {
   if (!me) redirect("/login");
 
   return (
-    <div className="flex-1 overflow-y-auto px-8 py-6 bg-noxias-bg text-noxias-text">
+    <div className="flex-1 overflow-y-auto px-8 py-6 bg-white text-gray-900">
       <div className="max-w-2xl">
-        <h1 className="text-2xl font-bold mb-1 text-white">Ton profil</h1>
-        <p className="text-sm text-noxias-textMuted mb-6">
+        <h1 className="text-2xl font-bold mb-1 text-gray-900">Ton profil</h1>
+        <p className="text-sm text-gray-500 mb-6">
           Soigne ton image, c'est ton premier closing.
         </p>
         <SettingsForm

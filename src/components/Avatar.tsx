@@ -61,7 +61,7 @@ export function Avatar({
   user,
   size = "md",
   showStatus = true,
-  ringClass = "ring-noxias-bg",
+  ringClass = "ring-white",
 }: {
   user: { id: string; name: string; image: string | null };
   size?: keyof typeof SIZES;

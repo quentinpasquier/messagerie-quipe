@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+const INPUT = "w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-noxias-green focus:ring-1 focus:ring-noxias-green";
+
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -39,7 +41,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     <form onSubmit={onSubmit} className="space-y-4">
       {mode === "signup" && (
         <div>
-          <label className="block text-sm font-medium mb-1 text-noxias-text">
+          <label className="block text-sm font-medium mb-1 text-gray-700">
             Nom
           </label>
           <input
@@ -48,12 +50,12 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             onChange={(e) => setName(e.target.value)}
             required
             placeholder="Prénom Nom"
-            className="w-full rounded border border-noxias-border bg-noxias-bg px-3 py-2 text-white placeholder-noxias-textMuted focus:outline-none focus:border-noxias-green"
+            className={INPUT}
           />
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium mb-1 text-noxias-text">
+        <label className="block text-sm font-medium mb-1 text-gray-700">
           Email pro
         </label>
         <input
@@ -62,11 +64,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="prenom@noxias.com"
-          className="w-full rounded border border-noxias-border bg-noxias-bg px-3 py-2 text-white placeholder-noxias-textMuted focus:outline-none focus:border-noxias-green"
+          className={INPUT}
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1 text-noxias-text">
+        <label className="block text-sm font-medium mb-1 text-gray-700">
           Mot de passe
         </label>
         <input
@@ -76,10 +78,10 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           required
           minLength={6}
           placeholder="Pas 'azerty123'"
-          className="w-full rounded border border-noxias-border bg-noxias-bg px-3 py-2 text-white placeholder-noxias-textMuted focus:outline-none focus:border-noxias-green"
+          className={INPUT}
         />
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <button
         type="submit"
         disabled={loading}

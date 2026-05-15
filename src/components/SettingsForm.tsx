@@ -11,7 +11,7 @@ type Me = {
   image: string | null;
 };
 
-const INPUT = "w-full rounded border border-noxias-border bg-noxias-surface px-3 py-2 text-white placeholder-noxias-textMuted focus:outline-none focus:border-noxias-green";
+const INPUT = "w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-noxias-green focus:ring-1 focus:ring-noxias-green";
 
 export function SettingsForm({ me }: { me: Me }) {
   const router = useRouter();
@@ -112,19 +112,19 @@ export function SettingsForm({ me }: { me: Me }) {
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="font-semibold mb-3 text-white">Photo de profil</h2>
+        <h2 className="font-semibold mb-3 text-gray-900">Photo de profil</h2>
         <div className="flex items-center gap-4">
           <Avatar
             user={{ id: me.id, name, image }}
             size="lg"
-            ringClass="ring-noxias-bg"
+            ringClass="ring-white"
           />
           <div className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="text-sm bg-noxias-secondary text-white px-3 py-1.5 rounded hover:bg-noxias-secondaryHover disabled:opacity-50 border border-noxias-border"
+              className="text-sm bg-gray-900 text-white px-3 py-1.5 rounded hover:bg-gray-800 disabled:opacity-50"
             >
               {uploading ? "Upload..." : "Changer la photo"}
             </button>
@@ -132,7 +132,7 @@ export function SettingsForm({ me }: { me: Me }) {
               <button
                 type="button"
                 onClick={removeAvatar}
-                className="text-xs text-noxias-textMuted hover:text-red-400 text-left"
+                className="text-xs text-gray-500 hover:text-red-600 text-left"
               >
                 Retirer la photo
               </button>
@@ -150,10 +150,10 @@ export function SettingsForm({ me }: { me: Me }) {
 
       <form onSubmit={save} className="space-y-6">
         <section>
-          <h2 className="font-semibold mb-3 text-white">Informations</h2>
+          <h2 className="font-semibold mb-3 text-gray-900">Informations</h2>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium mb-1 text-noxias-text">
+              <label className="block text-sm font-medium mb-1 text-gray-700">
                 Nom
               </label>
               <input
@@ -164,16 +164,16 @@ export function SettingsForm({ me }: { me: Me }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-noxias-text">
+              <label className="block text-sm font-medium mb-1 text-gray-700">
                 Email
               </label>
               <input
                 type="email"
                 value={me.email}
                 disabled
-                className="w-full rounded border border-noxias-borderSoft bg-noxias-surfaceSoft px-3 py-2 text-noxias-textMuted"
+                className="w-full rounded border border-gray-200 bg-gray-50 px-3 py-2 text-gray-500"
               />
-              <p className="text-xs text-noxias-textMuted mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 L'email est gravé dans le marbre.
               </p>
             </div>
@@ -181,10 +181,10 @@ export function SettingsForm({ me }: { me: Me }) {
         </section>
 
         <section>
-          <h2 className="font-semibold mb-3 text-white">Mot de passe</h2>
+          <h2 className="font-semibold mb-3 text-gray-900">Mot de passe</h2>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium mb-1 text-noxias-text">
+              <label className="block text-sm font-medium mb-1 text-gray-700">
                 Mot de passe actuel
               </label>
               <input
@@ -196,7 +196,7 @@ export function SettingsForm({ me }: { me: Me }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-noxias-text">
+              <label className="block text-sm font-medium mb-1 text-gray-700">
                 Nouveau mot de passe
               </label>
               <input
@@ -207,7 +207,7 @@ export function SettingsForm({ me }: { me: Me }) {
                 minLength={6}
                 className={INPUT}
               />
-              <p className="text-xs text-noxias-textMuted mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Laisse vide pour garder l'ancien.
               </p>
             </div>
@@ -217,7 +217,7 @@ export function SettingsForm({ me }: { me: Me }) {
         {msg && (
           <p
             className={`text-sm ${
-              msg.type === "ok" ? "text-noxias-green" : "text-red-400"
+              msg.type === "ok" ? "text-noxias-greenDark" : "text-red-600"
             }`}
           >
             {msg.text}
