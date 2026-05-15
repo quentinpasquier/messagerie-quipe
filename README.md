@@ -6,29 +6,46 @@ discussion, réactions emoji, indicateur de frappe et messages en temps réel.
 ## Stack
 
 - **Next.js 14** (App Router) + **TypeScript**
-- **Prisma** + **SQLite** pour la persistance
+- **Prisma** + **PostgreSQL** pour la persistance
 - **Socket.io** pour le temps réel (serveur custom `server.ts`)
 - **TailwindCSS** pour l'UI
 - **JWT** (via `jose`) + cookie HTTP-only pour les sessions
 - **bcryptjs** pour le hash des mots de passe
 
-## Démarrage rapide
+## Démarrage en local
+
+Il te faut un Postgres accessible. Le plus rapide via Docker :
 
 ```bash
-# 1. Installer les dépendances
-npm install
-
-# 2. Préparer la base SQLite
-cp .env.example .env   # adapter AUTH_SECRET en prod
-npx prisma db push
-
-# 3. Lancer le serveur de dev (Next + Socket.io)
-npm run dev
+docker run --name mq-pg -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16
 ```
 
-Ouvre [http://localhost:3000](http://localhost:3000) — crée un compte, puis
-ouvre un second onglet en navigation privée (ou un second navigateur) pour
-créer un autre compte et tester la messagerie en temps réel entre les deux.
+(ou installe Postgres avec `brew install postgresql@16 && brew services start postgresql@16`)
+
+Ensuite :
+
+```bash
+npm install
+cp .env.example .env        # ajuste DATABASE_URL et AUTH_SECRET
+npx prisma db push          # crée le schéma
+npm run dev                 # lance Next + Socket.io
+```
+
+Ouvre [http://localhost:3000](http://localhost:3000) et crée un compte. Pour
+tester le temps réel, ouvre un second onglet en navigation privée et inscris
+un autre utilisateur.
+
+## Déploiement sur Railway
+
+1. Crée un projet Railway et connecte ce repo
+2. Ajoute un service **PostgreSQL** dans le projet
+3. Définis les variables d'env du service Next :
+   - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}` (référence Railway)
+   - `AUTH_SECRET` = une string aléatoire (`openssl rand -base64 32`)
+4. Génère un domaine public (Settings → Networking → Generate Domain)
+
+Le `start` script applique le schéma à chaque démarrage via `prisma db push`,
+donc pas de migration manuelle à lancer.
 
 ## Fonctionnalités
 
@@ -63,13 +80,6 @@ src/
 
 Les DM réutilisent le modèle `Channel` avec `type = "DM"` et 2 membres — ça
 évite de dupliquer toute la logique de messagerie.
-
-## Production
-
-- Mettre un `AUTH_SECRET` robuste (≥ 32 caractères aléatoires)
-- Migrer vers PostgreSQL en remplaçant `provider = "sqlite"` dans
-  `prisma/schema.prisma` et `DATABASE_URL` dans `.env`
-- `npm run build && npm start`
 
 ## Limitations connues du MVP
 
