@@ -7,6 +7,7 @@ import { Avatar, STATUS_COLOR } from "./Avatar";
 import { StatusPicker } from "./StatusPicker";
 import { useStatus } from "./StatusProvider";
 import { useUnread } from "./NotificationProvider";
+import { NotificationToggle } from "./NotificationToggle";
 
 type Channel = { id: string; name: string };
 type DM = {
@@ -255,13 +256,14 @@ export function Sidebar({
         )}
       </div>
 
-      <div className="border-t border-white/10 px-3 py-2 flex items-center justify-between">
+      <div className="border-t border-white/10 px-3 py-2 flex items-center justify-between gap-2">
         <Link
           href="/settings"
           className="text-xs text-gray-400 hover:text-white"
         >
           Profil
         </Link>
+        <NotificationToggle />
         <button
           onClick={logout}
           className="text-xs text-gray-400 hover:text-white"
