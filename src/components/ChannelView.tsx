@@ -250,25 +250,25 @@ export function ChannelView({ me, channel }: Props) {
   return (
     <div className="flex h-full min-w-0 bg-white text-gray-900">
       <section className="flex-1 flex flex-col min-w-0 relative">
-        <header className="border-b border-gray-200 px-5 py-3 flex items-center gap-3 bg-white">
+        <header className="border-b border-black/30 px-5 py-3 flex items-center gap-3 bg-noxias-secondary text-white">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-gray-500 text-lg leading-none">
+            <span className="text-gray-300 text-lg leading-none">
               {channel.isDM ? "@" : channel.emoji || "#"}
             </span>
-            <h1 className="font-bold text-lg truncate text-gray-900">
+            <h1 className="font-bold text-lg truncate text-white">
               {channel.name}
             </h1>
             {!channel.isDM && (
               <button
                 onClick={() => setEditorOpen((v) => !v)}
-                className="text-gray-400 hover:text-noxias-greenDark text-sm"
+                className="text-gray-300 hover:text-noxias-green text-sm"
                 title="Modifier le canal"
               >
                 ✏️
               </button>
             )}
             {channel.description && (
-              <span className="text-sm text-gray-500 ml-2 truncate">
+              <span className="text-sm text-gray-300 ml-2 truncate">
                 {channel.description}
               </span>
             )}
@@ -287,7 +287,7 @@ export function ChannelView({ me, channel }: Props) {
                 {shownViewers.map((v) => (
                   <div
                     key={v.id}
-                    className="ring-2 ring-white rounded"
+                    className="ring-2 ring-noxias-secondary rounded-full"
                     title={v.name}
                   >
                     <Avatar
@@ -299,9 +299,9 @@ export function ChannelView({ me, channel }: Props) {
                 ))}
               </div>
               {hiddenViewers > 0 && (
-                <span className="text-xs text-gray-500">+{hiddenViewers}</span>
+                <span className="text-xs text-gray-300">+{hiddenViewers}</span>
               )}
-              <span className="text-xs text-gray-500 hidden sm:inline">
+              <span className="text-xs text-gray-300 hidden sm:inline">
                 {viewers.length === 1 ? "regarde" : "regardent"} ce canal
               </span>
             </div>

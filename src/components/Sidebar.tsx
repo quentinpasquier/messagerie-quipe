@@ -295,12 +295,12 @@ export function Sidebar({
 
   return (
     <aside className="w-64 bg-gray-50 border-r border-gray-200 text-gray-800 flex flex-col flex-shrink-0">
-      <div className="px-4 py-3 border-b border-gray-200">
+      <div className="px-4 py-3 bg-noxias-secondary border-b border-black/30">
         <div className="flex items-baseline gap-1.5">
           <span className="font-black text-noxias-green text-lg tracking-tight">
             Noxias
           </span>
-          <span className="text-xs text-gray-500">Chat</span>
+          <span className="text-xs text-gray-300">Chat</span>
         </div>
       </div>
 
